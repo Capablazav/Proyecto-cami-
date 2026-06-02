@@ -466,435 +466,581 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
 </div>
 
 <script>
+// ── DATA ──────────────────────────────────────────────
 var WEEKS = [
-  {label:"S1",dates:"2–8 Jun",   emoji:"🌱",days:3,bici:15,pesas:10,lpmMin:118,lpmMax:137},
-  {label:"S2",dates:"9–15 Jun",  emoji:"🌿",days:3,bici:20,pesas:10,lpmMin:118,lpmMax:137},
-  {label:"S3",dates:"16–22 Jun", emoji:"🌻",days:3,bici:20,pesas:10,lpmMin:118,lpmMax:137},
-  {label:"S4",dates:"23–29 Jun", emoji:"💪",days:3,bici:25,pesas:10,lpmMin:118,lpmMax:137},
-  {label:"S5",dates:"30J–6Jul",  emoji:"⚡",days:3,bici:25,pesas:15,lpmMin:118,lpmMax:137},
-  {label:"S6",dates:"7–13 Jul",  emoji:"🔥",days:3,bici:30,pesas:15,lpmMin:118,lpmMax:137},
-  {label:"S7",dates:"14–20 Jul", emoji:"🚀",days:4,bici:30,pesas:15,lpmMin:128,lpmMax:147},
-  {label:"S8",dates:"21–27 Jul", emoji:"🏆",days:4,bici:35,pesas:15,lpmMin:128,lpmMax:147},
+  {label:"S1",dates:"2-8 Jun",   emoji:"🌱",days:3,bici:15,pesas:10,lpmMin:118,lpmMax:137},
+  {label:"S2",dates:"9-15 Jun",  emoji:"🌿",days:3,bici:20,pesas:10,lpmMin:118,lpmMax:137},
+  {label:"S3",dates:"16-22 Jun", emoji:"🌻",days:3,bici:20,pesas:10,lpmMin:118,lpmMax:137},
+  {label:"S4",dates:"23-29 Jun", emoji:"💪",days:3,bici:25,pesas:10,lpmMin:118,lpmMax:137},
+  {label:"S5",dates:"30Jun-6Jul",emoji:"⚡",days:3,bici:25,pesas:15,lpmMin:118,lpmMax:137},
+  {label:"S6",dates:"7-13 Jul",  emoji:"🔥",days:3,bici:30,pesas:15,lpmMin:118,lpmMax:137},
+  {label:"S7",dates:"14-20 Jul", emoji:"🚀",days:4,bici:30,pesas:15,lpmMin:128,lpmMax:147},
+  {label:"S8",dates:"21-27 Jul", emoji:"🏆",days:4,bici:35,pesas:15,lpmMin:128,lpmMax:147}
 ];
 
 var WEEK_STARTS = [
-  new Date('2026-06-02'),
-  new Date('2026-06-09'),
-  new Date('2026-06-16'),
-  new Date('2026-06-23'),
-  new Date('2026-06-30'),
-  new Date('2026-07-07'),
-  new Date('2026-07-14'),
-  new Date('2026-07-21'),
+  new Date(2026,5,2),  // Jun 2
+  new Date(2026,5,9),  // Jun 9
+  new Date(2026,5,16), // Jun 16
+  new Date(2026,5,23), // Jun 23
+  new Date(2026,5,30), // Jun 30
+  new Date(2026,6,7),  // Jul 7
+  new Date(2026,6,14), // Jul 14
+  new Date(2026,6,21)  // Jul 21
 ];
 
-var DAYS_SHORT=["L","M","X","J","V","S","D"];
-var FEEL_EMOJI=["","😴","😐","🙂","😊","🤩"];
-var MOTIVATIONS=[
-  {icon:"🙏",text:"Honra tu cuerpo moviéndote hoy. Cada minuto es un regalo."},
-  {icon:"🔥",text:"¡Ya llevas días activa! Tu cuerpo te lo agradece."},
-  {icon:"💪",text:"Estás construyendo el hábito más valioso. No pares."},
-  {icon:"🚀",text:"¡Más de la mitad! Eres imparable."},
-  {icon:"🏆",text:"¡Casi llegamos! La mejor versión de ti emerge."},
+var DAYS_SHORT = ["L","M","X","J","V","S","D"];
+var FEEL_EMOJI = ["","😴","😐","🙂","😊","🤩"];
+var MOTIVATIONS = [
+  {icon:"🙏", text:"Honra tu cuerpo moviéndote hoy. Cada minuto es un regalo."},
+  {icon:"🔥", text:"Ya llevas dias activa! Tu cuerpo te lo agradece."},
+  {icon:"💪", text:"Estas construyendo el habito mas valioso. No pares."},
+  {icon:"🚀", text:"Mas de la mitad del camino! Eres imparable."},
+  {icon:"🏆", text:"Casi llegamos! La mejor version de ti emerge."}
 ];
 
-var state={}, selectedFeel=0;
+var state = {};
+var selectedFeel = 0;
 
-function save(){
-  try{
-    var str=JSON.stringify(state);
-    localStorage.setItem('mm3-state',str);
-    sessionStorage.setItem('mm3-state',str);
-  }catch(e){
-    try{sessionStorage.setItem('mm3-state',JSON.stringify(state));}catch(e2){}
+// ── STORAGE ──────────────────────────────────────────
+function saveState() {
+  try { localStorage.setItem('mm-state', JSON.stringify(state)); } catch(e) {}
+}
+function loadState() {
+  try {
+    var s = localStorage.getItem('mm-state');
+    if (s) state = JSON.parse(s);
+  } catch(e) { state = {}; }
+}
+loadState();
+
+// ── DATE HELPERS ──────────────────────────────────────
+function dateKey(d) {
+  var dt = new Date(d);
+  return 'day_' + dt.getFullYear() + '_' + dt.getMonth() + '_' + dt.getDate();
+}
+function todayKey() { return dateKey(new Date()); }
+
+function getWeekIdx(d) {
+  var dt = new Date(d); dt.setHours(0,0,0,0);
+  var idx = 0;
+  for (var i = 0; i < WEEK_STARTS.length; i++) {
+    var ws = new Date(WEEK_STARTS[i]); ws.setHours(0,0,0,0);
+    if (dt >= ws) idx = i;
+  }
+  return idx;
+}
+function getDayIdx(d) {
+  var dt = new Date(d); dt.setHours(0,0,0,0);
+  var wi = getWeekIdx(dt);
+  var ws = new Date(WEEK_STARTS[wi]); ws.setHours(0,0,0,0);
+  var diff = Math.floor((dt - ws) / 86400000);
+  return Math.max(0, Math.min(6, diff));
+}
+function currentWeekIdx() { return getWeekIdx(new Date()); }
+function currentDayIdx() { return getDayIdx(new Date()); }
+
+// ── NAVIGATION ────────────────────────────────────────
+function goTo(name) {
+  var screens = document.querySelectorAll('.screen');
+  for (var i = 0; i < screens.length; i++) screens[i].classList.remove('active');
+  var navBtns = document.querySelectorAll('.nav-btn');
+  for (var i = 0; i < navBtns.length; i++) navBtns[i].classList.remove('active');
+  var sc = document.getElementById('screen-' + name);
+  var nb = document.getElementById('nav-' + name);
+  if (sc) sc.classList.add('active');
+  if (nb) nb.classList.add('active');
+  if (name === 'tracker') renderTracker();
+  if (name === 'progress') renderProgress();
+  if (name === 'rutina') renderRutinaTable();
+  if (name === 'home') renderHome();
+}
+
+// ── HOME ──────────────────────────────────────────────
+function renderHome() {
+  renderHabits();
+  var now = new Date();
+  var dateEl = document.getElementById('today-date');
+  if (dateEl) dateEl.textContent = now.toLocaleDateString('es', {weekday:'long', day:'numeric', month:'long'});
+
+  var tk = todayKey();
+  var td = state[tk];
+  var se = document.getElementById('today-status');
+  if (se) {
+    if (td) {
+      if (td.type === 'done') {
+        se.textContent = '✅ Sesion registrada · ' + (td.min||0) + ' min · FC ' + (td.fc||'-');
+        se.style.color = 'var(--mint)';
+      } else if (td.type === 'rest') {
+        se.textContent = '😴 Dia de descanso';
+        se.style.color = 'var(--yellow)';
+      } else {
+        se.textContent = '❌ No pudiste hoy. Manana es otro dia!';
+        se.style.color = 'var(--coral)';
+      }
+    } else {
+      se.textContent = '¡Aun no registras de hoy! 🌅';
+      se.style.color = 'var(--dark)';
+    }
+  }
+
+  var totalDays = 0, totalMin = 0, fcSum = 0, fcCount = 0;
+  for (var k in state) {
+    var v = state[k];
+    if (v && v.type === 'done') {
+      totalDays++;
+      totalMin += parseInt(v.min || 0);
+      if (v.fc) { fcSum += parseInt(v.fc); fcCount++; }
+    }
+  }
+
+  var el1 = document.getElementById('home-streak');
+  var el2 = document.getElementById('home-week');
+  var el3 = document.getElementById('home-mes');
+  var el4 = document.getElementById('home-total-days');
+  var el5 = document.getElementById('home-total-min');
+  var el6 = document.getElementById('home-avg-fc');
+  if (el1) el1.textContent = totalDays;
+  if (el2) el2.textContent = currentWeekIdx() + 1;
+  if (el3) el3.textContent = currentWeekIdx() < 4 ? 1 : 2;
+  if (el4) el4.textContent = totalDays;
+  if (el5) el5.textContent = totalMin;
+  if (el6) el6.textContent = fcCount ? Math.round(fcSum/fcCount) : '-';
+
+  var mi = Math.min(Math.floor(totalDays/4), 4);
+  var m = MOTIVATIONS[mi];
+  var mob = document.getElementById('home-motivational');
+  if (mob) {
+    mob.querySelector('.icon').textContent = m.icon;
+    mob.querySelector('.text').textContent = m.text;
   }
 }
 
-function load(){
-  var str=null;
-  try{str=localStorage.getItem('mm3-state');}catch(e){}
-  if(!str){try{str=sessionStorage.getItem('mm3-state');}catch(e){}}
-  if(str){try{state=JSON.parse(str);}catch(e){state={};}}
-  else{state={};}
+function markToday(type) {
+  state[todayKey()] = {type: type};
+  saveState();
+  renderHome();
+  showNotif(type === 'rest' ? '😴 Descanso guardado' : '❌ Registrado. Manana sera mejor!');
 }
 
-load();
-
-function goTo(name){
-  document.querySelectorAll('.screen').forEach(function(s)s.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(function(b)b.classList.remove('active'));
-  document.getElementById('screen-'+name).classList.add('active');
-  document.getElementById('nav-'+name).classList.add('active');
-  if(name==='tracker')renderTracker();
-  if(name==='progress')renderProgress();
-  if(name==='rutina')renderRutinaTable();
-  if(name==='home')renderHome();
+// ── HABITS ────────────────────────────────────────────
+function getTodayHabits() {
+  var hk = 'h_' + todayKey();
+  if (!state[hk]) state[hk] = {water: 0, meal: null};
+  return state[hk];
 }
 
-function todayKey(){var d=new Date();return'day_'+d.getFullYear()+'_'+d.getMonth()+'_'+d.getDate()}
-function currentWeekIdx(){
-  var s=new Date('2026-06-02'),n=new Date();
-  var d=Math.floor((n-s)/(7*24*60*60*1000));
-  return Math.max(0,Math.min(7,d));
-}
-function currentDayInWeek(){var d=new Date().getDay();return d===0?6:d-1}
-
-
-function getTodayHabits(){
-  var tk=todayKey();
-  if(!state['h_'+tk])state['h_'+tk]={water:0,meal:null};
-  return state['h_'+tk];
+function changeWater(delta) {
+  var h = getTodayHabits();
+  h.water = Math.max(0, Math.min(8, h.water + delta));
+  state['h_' + todayKey()] = h;
+  saveState();
+  renderHabits();
 }
 
-function changeWater(delta){
-  var h=getTodayHabits();
-  h.water=Math.max(0,Math.min(8,h.water+delta));
-  state['h_'+todayKey()]=h;
-  save();renderHabits();
-}
-
-function selectMeal(val){
-  var h=getTodayHabits();
-  h.meal=val;
-  state['h_'+todayKey()]=h;
-  save();renderHabits();
-  var msgs={'3':'🍽️ ¡3 comidas! Perfecto 💚','2':'🍽️ 2 comidas. Mañana sumamos la tercera','1':'Solo 1 comida hoy. Tu cuerpo necesita más combustible','0':'🍔 Chatarra hoy. Sin juicio — mañana es otro día'};
+function selectMeal(val) {
+  var h = getTodayHabits();
+  h.meal = val;
+  state['h_' + todayKey()] = h;
+  saveState();
+  renderHabits();
+  var msgs = {'3':'🍽️ 3 comidas! Perfecto 💚', '2':'🍽️ 2 comidas. Manana sumamos la tercera', '1':'Solo 1 comida hoy.', '0':'🍔 Sin juicio. Manana es otro dia'};
   showNotif(msgs[val]);
 }
 
-function renderHabits(){
-  var h=getTodayHabits();
-  var wc=document.getElementById('water-count');
-  var wf=document.getElementById('water-fill');
-  var wl=document.getElementById('water-label');
-  if(wc)wc.textContent=h.water;
-  if(wf)wf.style.width=Math.round((h.water/8)*100)+'%';
-  if(wl)wl.textContent=h.water+'/8';
-  var mealClasses={'3':'selected-great','2':'selected-ok','1':'selected-bad','0':'selected-bad'};
-  ['3','2','1','0'].forEach(function(v){
-    var btn=document.getElementById('meal-'+v);
-    if(btn){btn.className='meal-btn'+(h.meal===v?' '+mealClasses[v]:'')}
-  });
+function renderHabits() {
+  var h = getTodayHabits();
+  var wc = document.getElementById('water-count');
+  var wf = document.getElementById('water-fill');
+  var wl = document.getElementById('water-label');
+  if (wc) wc.textContent = h.water;
+  if (wf) wf.style.width = Math.round((h.water/8)*100) + '%';
+  if (wl) wl.textContent = h.water + '/8';
+  var classes = {'3':'selected-great', '2':'selected-ok', '1':'selected-bad', '0':'selected-bad'};
+  var keys = ['3','2','1','0'];
+  for (var i = 0; i < keys.length; i++) {
+    var btn = document.getElementById('meal-' + keys[i]);
+    if (btn) {
+      btn.className = 'meal-btn' + (h.meal === keys[i] ? ' ' + classes[keys[i]] : '');
+    }
+  }
 }
 
-function renderHome(){
-  var now=new Date();
-  document.getElementById('today-date').textContent=now.toLocaleDateString('es',{weekday:'long',day:'numeric',month:'long'});
-  var tk=todayKey(),td=state[tk];
-  var se=document.getElementById('today-status');
-  if(td){
-    if(td.type==='done'){se.textContent='✅ Sesión registrada · '+( td.min||0)+' min · FC '+(td.fc||'–');se.style.color='var(--mint)'}
-    else if(td.type==='rest'){se.textContent='😴 Día de descanso';se.style.color='var(--yellow)'}
-    else{se.textContent='❌ No pudiste hoy. ¡Mañana es otro día!';se.style.color='var(--coral)'}
-  }else{se.textContent='¡Aún no registras de hoy! 🌅';se.style.color='var(--dark)'}
-
-  var totalDays=0,totalMin=0,fcArr=[];
-  Object.values(state).forEach(function(v){
-    if(v&&v.type==='done'){totalDays++;totalMin+=parseInt(v.min||0);if(v.fc)fcArr.push(parseInt(v.fc))}
-  });
-  document.getElementById('home-streak').textContent=totalDays;
-  document.getElementById('home-week').textContent=currentWeekIdx()+1;
-  document.getElementById('home-mes').textContent=currentWeekIdx()<4?1:2;
-  document.getElementById('home-total-days').textContent=totalDays;
-  document.getElementById('home-total-min').textContent=totalMin;
-  document.getElementById('home-avg-fc').textContent=fcArr.length?Math.round(fcArr.reduce(function(a,b){return a+b},0)/fcArr.length):'–';
-  var mi=Math.min(Math.floor(totalDays/4),4),m=MOTIVATIONS[mi];
-  document.getElementById('home-motivational').querySelector('.icon').textContent=m.icon;
-  document.getElementById('home-motivational').querySelector('.text').textContent=m.text;
+// ── MODAL ─────────────────────────────────────────────
+function openModal(dateStr) {
+  var modal = document.getElementById('sessionModal');
+  var dateInput = document.getElementById('s-date');
+  var d = dateStr ? new Date(dateStr + 'T12:00:00') : new Date();
+  if (dateInput) {
+    var y = d.getFullYear();
+    var mo = ('0' + (d.getMonth()+1)).slice(-2);
+    var da = ('0' + d.getDate()).slice(-2);
+    dateInput.value = y + '-' + mo + '-' + da;
+  }
+  if (modal) modal.classList.add('open');
 }
 
-function markToday(type){
-  state[todayKey()]={type:type};
-  save();renderHome();
-  showNotif(type==='rest'?'😴 Descanso guardado':'❌ Registrado. ¡Mañana será mejor!');
+function closeModal() {
+  var modal = document.getElementById('sessionModal');
+  if (modal) modal.classList.remove('open');
+  selectedFeel = 0;
+  var feelBtns = document.querySelectorAll('.feel-btn');
+  for (var i = 0; i < feelBtns.length; i++) feelBtns[i].classList.remove('selected');
 }
 
-function openModal(dateStr){
-  var modal=document.getElementById('sessionModal');
-  var dateInput=document.getElementById('s-date');
-  var d=dateStr?new Date(dateStr+'T12:00:00'):new Date();
-  dateInput.value=d.toISOString().split('T')[0];
-  modal.classList.add('open');
-}
-function closeModal(){
-  document.getElementById('sessionModal').classList.remove('open');
-  selectedFeel=0;
-  document.querySelectorAll('.feel-btn').forEach(function(b){b.classList.remove('selected')});
-}
-function selectFeel(v){
-  selectedFeel=v;
-  document.querySelectorAll('.feel-btn').forEach(function(b){b.classList.toggle('selected',parseInt(b.dataset.val)===v)});
+function selectFeel(v) {
+  selectedFeel = v;
+  var feelBtns = document.querySelectorAll('.feel-btn');
+  for (var i = 0; i < feelBtns.length; i++) {
+    if (parseInt(feelBtns[i].getAttribute('data-val')) === v) {
+      feelBtns[i].classList.add('selected');
+    } else {
+      feelBtns[i].classList.remove('selected');
+    }
+  }
 }
 
-function saveSession(){
-  var min=document.getElementById('s-min').value;
-  var fc=document.getElementById('s-fc').value;
-  var pesas=document.getElementById('s-pesas').value;
-  var dateVal=document.getElementById('s-date').value;
-  if(!min){alert('Ingresa los minutos');return}
-  var sessionDate=dateVal?new Date(dateVal+'T12:00:00'):new Date();
-  var wi=getWeekIdxForDate(sessionDate),di=getDayInWeekForDate(sessionDate);
-  var dk=dateKey(sessionDate);
-  state[dk]={type:'done',min:parseInt(min),fc:fc?parseInt(fc):null,feel:selectedFeel,pesas:pesas};
-  state['w'+wi+'d'+di]='done';
-  if(!state['w'+wi])state['w'+wi]={min:0,fcArr:[],feelArr:[]};
-  state['w'+wi].min=(state['w'+wi].min||0)+parseInt(min);
-  if(fc){
-    if(!state['w'+wi].fcArr)state['w'+wi].fcArr=[];
+function saveSession() {
+  var minEl = document.getElementById('s-min');
+  var fcEl = document.getElementById('s-fc');
+  var pesasEl = document.getElementById('s-pesas');
+  var dateEl = document.getElementById('s-date');
+  var min = minEl ? minEl.value : '';
+  var fc = fcEl ? fcEl.value : '';
+  var pesas = pesasEl ? pesasEl.value : 'bici';
+  var dateVal = dateEl ? dateEl.value : '';
+  if (!min) { alert('Ingresa los minutos'); return; }
+  var sessionDate = dateVal ? new Date(dateVal + 'T12:00:00') : new Date();
+  var wi = getWeekIdx(sessionDate);
+  var di = getDayIdx(sessionDate);
+  var dk = dateKey(sessionDate);
+  state[dk] = {type:'done', min:parseInt(min), fc:fc?parseInt(fc):null, feel:selectedFeel, pesas:pesas};
+  state['w'+wi+'d'+di] = 'done';
+  if (!state['w'+wi]) state['w'+wi] = {min:0, fcArr:[], feelArr:[]};
+  state['w'+wi].min = (state['w'+wi].min||0) + parseInt(min);
+  if (fc) {
+    if (!state['w'+wi].fcArr) state['w'+wi].fcArr = [];
     state['w'+wi].fcArr.push(parseInt(fc));
-    state['w'+wi].fc=Math.round(state['w'+wi].fcArr.reduce(function(a,b){return a+b;},0)/state['w'+wi].fcArr.length);
+    var s=0; for(var i=0;i<state['w'+wi].fcArr.length;i++) s+=state['w'+wi].fcArr[i];
+    state['w'+wi].fc = Math.round(s/state['w'+wi].fcArr.length);
   }
-  if(selectedFeel){
-    if(!state['w'+wi].feelArr)state['w'+wi].feelArr=[];
+  if (selectedFeel) {
+    if (!state['w'+wi].feelArr) state['w'+wi].feelArr = [];
     state['w'+wi].feelArr.push(selectedFeel);
-    state['w'+wi].feel=Math.round(state['w'+wi].feelArr.reduce(function(a,b){return a+b;},0)/state['w'+wi].feelArr.length);
+    var s=0; for(var i=0;i<state['w'+wi].feelArr.length;i++) s+=state['w'+wi].feelArr[i];
+    state['w'+wi].feel = Math.round(s/state['w'+wi].feelArr.length);
   }
-  save();closeModal();renderHome();
-  showNotif('✅ '+min+' min registrados! '+(pesas==='ambos'?'Bici + pesas 💪':''));
-  document.getElementById('s-min').value='';
-  document.getElementById('s-fc').value='';
+  saveState();
+  closeModal();
+  renderHome();
+  showNotif('✅ ' + min + ' min registrados! ' + (pesas==='ambos'?'Bici + pesas 💪':''));
+  if (minEl) minEl.value = '';
+  if (fcEl) fcEl.value = '';
 }
 
-function renderRutinaTable(){
-  var tbody=document.getElementById('rutina-table-body');
-  if(!tbody)return;
-  var wi=currentWeekIdx();
-  tbody.innerHTML=WEEKS.map(function(w,i){
-    var isActive=i===wi;
-    var rowStyle=isActive?'background:linear-gradient(135deg,rgba(107,203,119,0.12),rgba(77,150,255,0.08));':'background:'+(i%2===0?'#fafafa':'white')+';';
-    var total=w.bici+w.pesas;
-    var lpmColor=i<6?'var(--mint)':'var(--yellow)';
-    return '<tr style="'+rowStyle+'">'
-      +'<td style="padding:9px 8px;font-weight:'+(isActive?'900':'700')+'">'+(isActive?'👉 ':'')+w.emoji+' '+w.label+'</td>'
-      +'<td style="padding:9px 5px;text-align:center;font-weight:800">'+w.days+'</td>'
-      +'<td style="padding:9px 5px;text-align:center;color:var(--sky);font-weight:800">'+w.bici+'m</td>'
-      +'<td style="padding:9px 5px;text-align:center;color:'+lpmColor+';font-weight:800;font-size:0.7rem">'+w.lpmMin+'–'+w.lpmMax+'</td>'
-      +'<td style="padding:9px 5px;text-align:center;color:var(--purple);font-weight:800">'+w.pesas+'m</td>'
-      +'<td style="padding:9px 5px;text-align:center;font-weight:800">~'+total+'m</td>'
-      +'</tr>';
-  }).join('');
+// ── RUTINA TABLE ──────────────────────────────────────
+function renderRutinaTable() {
+  var tbody = document.getElementById('rutina-table-body');
+  if (!tbody) return;
+  var wi = currentWeekIdx();
+  var html = '';
+  for (var i = 0; i < WEEKS.length; i++) {
+    var w = WEEKS[i];
+    var isActive = i === wi;
+    var bg = isActive ? 'background:rgba(107,203,119,0.12);' : (i%2===0?'background:#fafafa;':'background:white;');
+    var total = w.bici + w.pesas;
+    var lpmColor = i < 6 ? 'var(--mint)' : 'var(--yellow)';
+    html += '<tr style="' + bg + '">';
+    html += '<td style="padding:9px 8px;font-weight:' + (isActive?'900':'700') + '">' + (isActive?'👉 ':'') + w.emoji + ' ' + w.label + '</td>';
+    html += '<td style="padding:9px 5px;text-align:center;font-weight:800">' + w.days + '</td>';
+    html += '<td style="padding:9px 5px;text-align:center;color:var(--sky);font-weight:800">' + w.bici + 'm</td>';
+    html += '<td style="padding:9px 5px;text-align:center;color:' + lpmColor + ';font-weight:800;font-size:0.68rem">' + w.lpmMin + '-' + w.lpmMax + '</td>';
+    html += '<td style="padding:9px 5px;text-align:center;color:var(--purple);font-weight:800">' + w.pesas + 'm</td>';
+    html += '<td style="padding:9px 5px;text-align:center;font-weight:800">~' + total + 'm</td>';
+    html += '</tr>';
+  }
+  tbody.innerHTML = html;
 }
 
-function renderTracker(){
-  var totalDone=0;
-  WEEKS.forEach(function(_,wi){for(var di=0;di<7;di++)if((state['w'+wi+'d'+di]||'')==='done')totalDone++});
-  var pct=Math.round((totalDone/56)*100);
-  document.getElementById('tracker-bar').style.width=pct+'%';
-  document.getElementById('tracker-pct').textContent=pct+'%';
-  var container=document.getElementById('week-cards');
-  container.innerHTML='';
-  WEEKS.forEach(function(week,wi){
-    var doneDays=0;
-    var daysHTML=DAYS_SHORT.map(function(d,di){
-      var status=state['w'+wi+'d'+di]||'empty';
-      if(status==='done')doneDays++;
-      var icons={empty:'',done:'✅',rest:'😴',skip:'❌'};
-      return '<div class="day-item"><span class="day-name">'+d+'</span><div class="day-circle '+status+'" onclick="cycleDay('+wi+','+di+')">'+icons[status]+'</div></div>';
-    }).join('');
-    var wData=state['w'+wi]||{};
-    var isComplete=doneDays>=week.days;
-    var card=document.createElement('div');
-    card.className='week-item';
-    card.innerHTML='<div class="week-item-header"><div><div class="week-item-title">'+week.emoji+' Semana '+(wi+1)+'</div><div class="week-item-sub">'+week.dates+' · '+week.days+' días · '+week.bici+'min bici · FC '+week.lpmMin+'–'+week.lpmMax+'</div></div><div class="week-done-badge '+(isComplete?'complete':'')+'">'+(doneDays)+'/'+week.days+'</div></div>'
-      +'<div class="days-grid">'+daysHTML+'</div>'
-      +'<div class="week-metrics">'
-      +'<div class="week-metric-box"><div class="week-metric-val">'+(wData.min||0)+'m</div><div class="week-metric-lbl">⏱ Minutos</div></div>'
-      +'<div class="week-metric-box"><div class="week-metric-val">'+(wData.fc||'–')+'</div><div class="week-metric-lbl">❤️ FC prom.</div></div>'
-      +'<div class="week-metric-box"><div class="week-metric-val">'+(wData.feel?FEEL_EMOJI[Math.round(wData.feel)]:'–')+'</div><div class="week-metric-lbl">😊 Sensación</div></div>'
-      +'</div>';
-    container.appendChild(card);
-  });
+// ── TRACKER ───────────────────────────────────────────
+function renderTracker() {
+  var totalDone = 0;
+  for (var wi = 0; wi < WEEKS.length; wi++) {
+    for (var di = 0; di < 7; di++) {
+      if (state['w'+wi+'d'+di] === 'done') totalDone++;
+    }
+  }
+  var pct = Math.round((totalDone/56)*100);
+  var bar = document.getElementById('tracker-bar');
+  var pctEl = document.getElementById('tracker-pct');
+  if (bar) bar.style.width = pct + '%';
+  if (pctEl) pctEl.textContent = pct + '%';
+
+  var container = document.getElementById('week-cards');
+  if (!container) return;
+  var html = '';
+  for (var wi = 0; wi < WEEKS.length; wi++) {
+    var week = WEEKS[wi];
+    var doneDays = 0;
+    var daysHtml = '';
+    for (var di = 0; di < 7; di++) {
+      var status = state['w'+wi+'d'+di] || 'empty';
+      if (status === 'done') doneDays++;
+      var icon = status==='done'?'✅':status==='rest'?'😴':status==='skip'?'❌':'';
+      daysHtml += '<div class="day-item"><span class="day-name">' + DAYS_SHORT[di] + '</span>';
+      daysHtml += '<div class="day-circle ' + status + '" onclick="cycleDay(' + wi + ',' + di + ')">' + icon + '</div></div>';
+    }
+    var wData = state['w'+wi] || {};
+    var complete = doneDays >= week.days;
+    var feelVal = wData.feel ? Math.round(wData.feel) : 0;
+    html += '<div class="week-item">';
+    html += '<div class="week-item-header">';
+    html += '<div><div class="week-item-title">' + week.emoji + ' Semana ' + (wi+1) + '</div>';
+    html += '<div class="week-item-sub">' + week.dates + ' · ' + week.days + ' dias · ' + week.bici + 'min · FC ' + week.lpmMin + '-' + week.lpmMax + '</div></div>';
+    html += '<div class="week-done-badge ' + (complete?'complete':'') + '">' + doneDays + '/' + week.days + '</div>';
+    html += '</div><div class="days-grid">' + daysHtml + '</div>';
+    html += '<div class="week-metrics">';
+    html += '<div class="week-metric-box"><div class="week-metric-val">' + (wData.min||0) + 'm</div><div class="week-metric-lbl">⏱ Minutos</div></div>';
+    html += '<div class="week-metric-box"><div class="week-metric-val">' + (wData.fc||'-') + '</div><div class="week-metric-lbl">❤️ FC prom.</div></div>';
+    html += '<div class="week-metric-box"><div class="week-metric-val">' + (feelVal?FEEL_EMOJI[feelVal]:'-') + '</div><div class="week-metric-lbl">😊 Sensacion</div></div>';
+    html += '</div></div>';
+  }
+  container.innerHTML = html;
 }
 
-function cycleDay(wi,di){
-  var key='w'+wi+'d'+di;
-  var cur=state[key]||'empty';
-  var next={empty:'done',done:'rest',rest:'skip',skip:'empty'};
-  state[key]=next[cur];
-  save();renderTracker();renderHome();
+function cycleDay(wi, di) {
+  var key = 'w'+wi+'d'+di;
+  var cur = state[key] || 'empty';
+  var next = {empty:'done', done:'rest', rest:'skip', skip:'empty'};
+  state[key] = next[cur];
+  saveState();
+  renderTracker();
+  renderHome();
 }
 
-function renderProgress(){
-  // Minutes bar chart
-  var minData=WEEKS.map(function(_,wi){
-    var w=state['w'+wi];
-    return w?parseInt(w.min||0):0;
-  });
-  var maxMin=Math.max.apply(null,minData.concat([1]));
-  var minChart=document.getElementById('chart-min');
-  if(!minChart)return;
-  var hasMin=minData.some(function(v){return v>0});
-  if(!hasMin){
-    minChart.innerHTML='<div class="empty-state"><div class="icon">⏱</div>Registra sesiones para ver tus minutos</div>';
-  } else {
-    minChart.innerHTML=minData.map(function(val,i){
-      return '<div class="bar-col">'
-        +'<div class="bar-val">'+(val||'')+'</div>'
-        +'<div class="bar-fill" style="height:'+(val/maxMin*90)+'px;background:linear-gradient(180deg,var(--sky),var(--purple))"></div>'
-        +'<div class="bar-lbl">S'+(i+1)+'</div>'
-        +'</div>';
-    }).join('');
+// ── PROGRESS ──────────────────────────────────────────
+function renderProgress() {
+  // Minutes
+  var minData = [];
+  for (var wi = 0; wi < WEEKS.length; wi++) {
+    var w = state['w'+wi];
+    minData.push(w ? parseInt(w.min||0) : 0);
+  }
+  var maxMin = 1;
+  for (var i = 0; i < minData.length; i++) if (minData[i] > maxMin) maxMin = minData[i];
+  var minChart = document.getElementById('chart-min');
+  if (minChart) {
+    var hasMin = false;
+    for (var i = 0; i < minData.length; i++) if (minData[i] > 0) { hasMin = true; break; }
+    if (!hasMin) {
+      minChart.innerHTML = '<div class="empty-state"><div class="icon">⏱</div>Registra sesiones para ver tus minutos</div>';
+    } else {
+      var html = '';
+      for (var i = 0; i < minData.length; i++) {
+        var h = Math.round((minData[i]/maxMin)*90);
+        html += '<div class="bar-col"><div class="bar-val">' + (minData[i]||'') + '</div>';
+        html += '<div class="bar-fill" style="height:' + h + 'px;background:linear-gradient(180deg,var(--sky),var(--purple))"></div>';
+        html += '<div class="bar-lbl">S' + (i+1) + '</div></div>';
+      }
+      minChart.innerHTML = html;
+    }
   }
 
-  // FC line chart
-  var fcData=WEEKS.map(function(_,wi){
-    var w=state['w'+wi];
-    return w&&w.fc?parseInt(w.fc):null;
-  });
-  var svg=document.getElementById('chart-fc');
-  if(!svg)return;
-  var validFc=fcData.filter(function(v){return v!==null});
-  if(validFc.length<2){
-    svg.innerHTML='<text x="150" y="60" text-anchor="middle" font-size="11" fill="#bbb" font-family="Nunito">Necesitas 2+ semanas para ver la línea</text>';
-  } else {
-    var minFc=Math.min.apply(null,validFc)-10;
-    var maxFc=Math.max.apply(null,validFc)+10;
-    var pts=[];
-    fcData.forEach(function(v,i){
-      if(v!==null){
-        var x=20+i*(260/7);
-        var y=100-((v-minFc)/(maxFc-minFc))*80;
-        pts.push({x:x,y:y,v:v});
+  // FC line
+  var fcData = [];
+  for (var wi = 0; wi < WEEKS.length; wi++) {
+    var w = state['w'+wi];
+    fcData.push(w && w.fc ? parseInt(w.fc) : null);
+  }
+  var svg = document.getElementById('chart-fc');
+  if (svg) {
+    var validFc = [];
+    for (var i = 0; i < fcData.length; i++) if (fcData[i] !== null) validFc.push(fcData[i]);
+    if (validFc.length < 2) {
+      svg.innerHTML = '<text x="150" y="60" text-anchor="middle" font-size="11" fill="#bbb" font-family="Nunito">Necesitas 2+ semanas para ver la linea</text>';
+    } else {
+      var minFc = validFc[0], maxFc = validFc[0];
+      for (var i = 0; i < validFc.length; i++) {
+        if (validFc[i] < minFc) minFc = validFc[i];
+        if (validFc[i] > maxFc) maxFc = validFc[i];
+      }
+      minFc -= 10; maxFc += 10;
+      var pts = [];
+      for (var i = 0; i < fcData.length; i++) {
+        if (fcData[i] !== null) {
+          pts.push({x: 20+i*(260/7), y: 100-((fcData[i]-minFc)/(maxFc-minFc))*80, v: fcData[i]});
+        }
+      }
+      var path = '';
+      for (var i = 0; i < pts.length; i++) path += (i===0?'M':'L') + pts[i].x + ',' + pts[i].y;
+      var z2t = 100-((137-minFc)/(maxFc-minFc))*80;
+      var z2b = 100-((118-minFc)/(maxFc-minFc))*80;
+      var svgHtml = '<defs><linearGradient id="fcg" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#FF6B6B"/><stop offset="100%" stop-color="#C77DFF"/></linearGradient></defs>';
+      svgHtml += '<rect x="20" y="' + z2t + '" width="260" height="' + (z2b-z2t) + '" fill="rgba(107,203,119,0.1)" rx="4"/>';
+      svgHtml += '<path d="' + path + '" fill="none" stroke="url(#fcg)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>';
+      for (var i = 0; i < pts.length; i++) {
+        svgHtml += '<circle cx="' + pts[i].x + '" cy="' + pts[i].y + '" r="5" fill="white" stroke="#FF6B6B" stroke-width="2.5"/>';
+        svgHtml += '<text x="' + pts[i].x + '" y="' + (pts[i].y-10) + '" text-anchor="middle" font-size="9" font-weight="bold" fill="#666">' + pts[i].v + '</text>';
+      }
+      for (var i = 0; i < 8; i++) svgHtml += '<text x="' + (20+i*(260/7)) + '" y="116" text-anchor="middle" font-size="8" fill="#bbb">S' + (i+1) + '</text>';
+      svg.innerHTML = svgHtml;
+    }
+  }
+
+  // Feel
+  var feelEl = document.getElementById('chart-feel');
+  if (feelEl) {
+    var html = '';
+    for (var wi = 0; wi < WEEKS.length; wi++) {
+      var w = state['w'+wi];
+      var val = w && w.feel ? Math.round(w.feel) : 0;
+      html += '<div class="feel-col"><div class="feel-dot ' + (val?'has-data':'') + '">' + (val?FEEL_EMOJI[val]:'') + '</div><div class="feel-lbl">S' + (wi+1) + '</div></div>';
+    }
+    feelEl.innerHTML = html;
+  }
+
+  // Water
+  var wChart = document.getElementById('chart-water');
+  if (wChart) {
+    var waterData = [];
+    for (var wi = 0; wi < WEEK_STARTS.length; wi++) {
+      var total = 0, count = 0;
+      for (var di = 0; di < 7; di++) {
+        var d = new Date(WEEK_STARTS[wi].getTime() + di*86400000);
+        var hk = 'h_' + dateKey(d);
+        if (state[hk] && state[hk].water > 0) { total += state[hk].water; count++; }
+      }
+      waterData.push(count ? Math.round(total/count) : 0);
+    }
+    var maxW = 1;
+    for (var i = 0; i < waterData.length; i++) if (waterData[i] > maxW) maxW = waterData[i];
+    var hasW = false;
+    for (var i = 0; i < waterData.length; i++) if (waterData[i] > 0) { hasW = true; break; }
+    if (!hasW) {
+      wChart.innerHTML = '<div class="empty-state"><div class="icon">💧</div>Registra agua para ver el historial</div>';
+    } else {
+      var html = '';
+      for (var i = 0; i < waterData.length; i++) {
+        var h = Math.round((waterData[i]/maxW)*90);
+        html += '<div class="bar-col"><div class="bar-val">' + (waterData[i]||'') + '</div>';
+        html += '<div class="bar-fill" style="height:' + h + 'px;background:linear-gradient(180deg,var(--sky),#a8d8ff)"></div>';
+        html += '<div class="bar-lbl">S' + (i+1) + '</div></div>';
+      }
+      wChart.innerHTML = html;
+    }
+  }
+
+  // Meals
+  var mChart = document.getElementById('chart-meals');
+  if (mChart) {
+    var mealKeys = ['3','2','1','0'];
+    var mealLabels = {'3':'🍽️🍽️🍽️ 3 comidas','2':'🍽️🍽️ 2 comidas','1':'🍽️ 1 comida','0':'🍔 Chatarra'};
+    var mealColors = {'3':'var(--mint)','2':'var(--yellow)','1':'var(--peach)','0':'var(--coral)'};
+    var mealData = [];
+    for (var wi = 0; wi < WEEK_STARTS.length; wi++) {
+      var counts = {'3':0,'2':0,'1':0,'0':0};
+      for (var di = 0; di < 7; di++) {
+        var d = new Date(WEEK_STARTS[wi].getTime() + di*86400000);
+        var hk = 'h_' + dateKey(d);
+        if (state[hk] && state[hk].meal) counts[state[hk].meal]++;
+      }
+      mealData.push(counts);
+    }
+    var hasMeals = false;
+    for (var wi = 0; wi < mealData.length; wi++) {
+      for (var ki = 0; ki < mealKeys.length; ki++) {
+        if (mealData[wi][mealKeys[ki]] > 0) { hasMeals = true; break; }
+      }
+    }
+    if (!hasMeals) {
+      mChart.innerHTML = '<div class="empty-state"><div class="icon">🍽️</div>Registra comidas para ver el historial</div>';
+    } else {
+      var html = '';
+      for (var ki = 0; ki < mealKeys.length; ki++) {
+        var key = mealKeys[ki];
+        var vals = [];
+        var hasVals = false;
+        for (var wi = 0; wi < mealData.length; wi++) {
+          vals.push(mealData[wi][key]);
+          if (mealData[wi][key] > 0) hasVals = true;
+        }
+        if (!hasVals) continue;
+        var maxV = 1;
+        for (var i = 0; i < vals.length; i++) if (vals[i] > maxV) maxV = vals[i];
+        html += '<div style="margin-bottom:10px">';
+        html += '<div style="font-size:0.72rem;font-weight:800;color:var(--gray);margin-bottom:6px">' + mealLabels[key] + '</div>';
+        html += '<div style="display:flex;align-items:flex-end;gap:6px;height:50px">';
+        for (var i = 0; i < vals.length; i++) {
+          var h = vals[i] > 0 ? Math.max(4, Math.round(vals[i]/maxV*40)) : 0;
+          html += '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">';
+          html += '<div style="width:100%;height:' + h + 'px;background:' + mealColors[key] + ';border-radius:4px 4px 0 0"></div>';
+          html += '<div style="font-size:0.56rem;font-weight:800;color:#bbb">S' + (i+1) + '</div>';
+          html += '</div>';
+        }
+        html += '</div></div>';
+      }
+      mChart.innerHTML = html;
+    }
+  }
+}
+
+// ── NOTIF & REMINDER ──────────────────────────────────
+function showNotif(msg) {
+  var b = document.getElementById('notifBanner');
+  var t = document.getElementById('notifText');
+  if (b && t) {
+    t.textContent = msg;
+    b.classList.add('show');
+    setTimeout(function() { b.classList.remove('show'); }, 3000);
+  }
+}
+
+function setReminder() {
+  var timeEl = document.getElementById('reminder-time');
+  var time = timeEl ? timeEl.value : '';
+  if (!time) return;
+  var parts = time.split(':');
+  var h = parseInt(parts[0]), m = parseInt(parts[1]);
+  var now = new Date(), target = new Date();
+  target.setHours(h, m, 0, 0);
+  if (target <= now) target.setDate(target.getDate() + 1);
+  var ms = target - now;
+  var statusEl = document.getElementById('reminder-status');
+  if ('Notification' in window) {
+    Notification.requestPermission().then(function(perm) {
+      if (perm === 'granted') {
+        setTimeout(function() {
+          new Notification('Mi Movimiento 💪', {body: 'Hora de moverte! FC objetivo: 118-137 LPM 💚'});
+        }, ms);
+        if (statusEl) statusEl.style.display = 'block';
+        showNotif('🔔 Recordatorio activo para las ' + time);
+      } else {
+        showNotif('Activa permisos en Safari → Configuracion');
       }
     });
-    var path=pts.map(function(p,i){return(i===0?'M':'L')+p.x+','+p.y;}).join(' ');
-    var z2top=100-((137-minFc)/(maxFc-minFc))*80;
-    var z2bot=100-((118-minFc)/(maxFc-minFc))*80;
-    var html='<defs><linearGradient id="fcg" x1="0" y1="0" x2="1" y2="0">'
-      +'<stop offset="0%" stop-color="#FF6B6B"/>'
-      +'<stop offset="100%" stop-color="#C77DFF"/>'
-      +'</linearGradient></defs>'
-      +'<rect x="20" y="'+z2top+'" width="260" height="'+(z2bot-z2top)+'" fill="rgba(107,203,119,0.1)" rx="4"/>'
-      +'<path d="'+path+'" fill="none" stroke="url(#fcg)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>';
-    pts.forEach(function(p){
-      html+='<circle cx="'+p.x+'" cy="'+p.y+'" r="5" fill="white" stroke="#FF6B6B" stroke-width="2.5"/>';
-      html+='<text x="'+p.x+'" y="'+(p.y-10)+'" text-anchor="middle" font-size="9" font-weight="bold" fill="#666">'+p.v+'</text>';
-    });
-    for(var i=0;i<8;i++){
-      html+='<text x="'+(20+i*(260/7))+'" y="116" text-anchor="middle" font-size="8" fill="#bbb">S'+(i+1)+'</text>';
-    }
-    html+='<text x="284" y="'+(z2top+8)+'" font-size="7" fill="var(--mint)" font-weight="bold">Z2</text>';
-    svg.innerHTML=html;
+  } else {
+    setTimeout(function() { showNotif('🔔 Hora de moverte! FC 118-137 💚'); }, ms > 86400000 ? 5000 : ms);
+    if (statusEl) statusEl.style.display = 'block';
+    showNotif('🔔 Recordatorio activo para las ' + time);
   }
-
-  // Feel dots
-  var FEEL_EMJ=["","😴","😐","🙂","😊","🤩"];
-  var feelData=WEEKS.map(function(_,wi){
-    var w=state['w'+wi];
-    return w&&w.feel?Math.round(w.feel):null;
-  });
-  var feelEl=document.getElementById('chart-feel');
-  if(feelEl){
-    feelEl.innerHTML=feelData.map(function(val,i){
-      return '<div class="feel-col">'
-        +'<div class="feel-dot '+(val?'has-data':'')+'">'+(val?FEEL_EMJ[val]:'')+'</div>'
-        +'<div class="feel-lbl">S'+(i+1)+'</div>'
-        +'</div>';
-    }).join('');
-  }
-
-  // Water chart
-  var waterData=WEEK_STARTS.map(function(ws,wi){
-    var total=0,count=0;
-    for(var di=0;di<7;di++){
-      var d=new Date(ws.getTime()+di*24*60*60*1000);
-      var hk='h_'+dateKey(d);
-      if(state[hk]&&state[hk].water>0){total+=state[hk].water;count++;}
-    }
-    return count?Math.round(total/count):0;
-  });
-  var maxW=Math.max.apply(null,waterData.concat([1]));
-  var wChart=document.getElementById('chart-water');
-  if(wChart){
-    var hasW=waterData.some(function(v){return v>0});
-    if(!hasW){
-      wChart.innerHTML='<div class="empty-state"><div class="icon">💧</div>Registra agua para ver el historial</div>';
-    } else {
-      wChart.innerHTML=waterData.map(function(val,i){
-        return '<div class="bar-col">'
-          +'<div class="bar-val">'+(val||'')+'</div>'
-          +'<div class="bar-fill" style="height:'+(val/maxW*90)+'px;background:linear-gradient(180deg,var(--sky),#a8d8ff)"></div>'
-          +'<div class="bar-lbl">S'+(i+1)+'</div>'
-          +'</div>';
-      }).join('');
-    }
-  }
-
-  // Meals chart
-  var mealLabels={'3':'🍽️🍽️🍽️ 3 comidas','2':'🍽️🍽️ 2 comidas','1':'🍽️ 1 comida','0':'🍔 Chatarra'};
-  var mealColors={'3':'var(--mint)','2':'var(--yellow)','1':'var(--peach)','0':'var(--coral)'};
-  var mealData=WEEK_STARTS.map(function(ws){
-    var counts={'3':0,'2':0,'1':0,'0':0};
-    for(var di=0;di<7;di++){
-      var d=new Date(ws.getTime()+di*24*60*60*1000);
-      var hk='h_'+dateKey(d);
-      if(state[hk]&&state[hk].meal){counts[state[hk].meal]++;}
-    }
-    return counts;
-  });
-  var mChart=document.getElementById('chart-meals');
-  if(mChart){
-    var hasMeals=mealData.some(function(w){return w['3']>0||w['2']>0||w['1']>0||w['0']>0});
-    if(!hasMeals){
-      mChart.innerHTML='<div class="empty-state"><div class="icon">🍽️</div>Registra comidas para ver el historial</div>';
-    } else {
-      var html='';
-      ['3','2','1','0'].forEach(function(key){
-        var vals=mealData.map(function(w){return w[key];});
-        if(!vals.some(function(v){return v>0;}))return;
-        var maxV=Math.max.apply(null,vals.concat([1]));
-        html+='<div style="margin-bottom:10px">';
-        html+='<div style="font-size:0.72rem;font-weight:800;color:var(--gray);margin-bottom:6px">'+mealLabels[key]+'</div>';
-        html+='<div style="display:flex;align-items:flex-end;gap:6px;height:50px">';
-        vals.forEach(function(v,i){
-          html+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">';
-          html+='<div style="width:100%;height:'+(v>0?Math.max(4,v/maxV*40):0)+'px;background:'+mealColors[key]+';border-radius:4px 4px 0 0"></div>';
-          html+='<div style="font-size:0.56rem;font-weight:800;color:#bbb">S'+(i+1)+'</div>';
-          html+='</div>';
-        });
-        html+='</div></div>';
-      });
-      mChart.innerHTML=html;
-    }
-  }
+  state.reminderTime = time;
+  saveState();
 }
 
-function showNotif(msg){
-  var b=document.getElementById('notifBanner');
-  document.getElementById('notifText').textContent=msg;
-  b.classList.add('show');
-  setTimeout(function(){b.classList.remove('show')},3000);
-}
-
-function setReminder(){
-  var time=document.getElementById('reminder-time').value;
-  if(!time)return;
-  var parts=time.split(':');
-  var h=parseInt(parts[0]),m=parseInt(parts[1]);
-  var now=new Date(),target=new Date();
-  target.setHours(h,m,0,0);
-  if(target<=now)target.setDate(target.getDate()+1);
-  var ms=target-now;
-  if('Notification' in window){
-    Notification.requestPermission().then(function(perm){
-      if(perm==='granted'){
-        setTimeout(function(){new Notification('¡Mi Movimiento! 💪',{body:'¡Hora de moverte! Recuerda: FC entre 118–137 LPM 💚'})},ms);
-        document.getElementById('reminder-status').style.display='block';
-        showNotif('🔔 Recordatorio activo para las '+time);
-      }else{showNotif('⚠️ Activa permisos en Safari → Configuración')}
-    });
-  }else{
-    setTimeout(function(){showNotif('🔔 ¡Hora de moverte! FC objetivo: 118–137 💚')},ms>86400000?5000:ms);
-    document.getElementById('reminder-status').style.display='block';
-    showNotif('🔔 Recordatorio activo para las '+time);
-  }
-  state.reminderTime=time;save();
-}
-
-// Init
+// ── INIT ──────────────────────────────────────────────
 renderHome();
-document.getElementById('sessionModal').addEventListener('click',function(e){if(e.target===this)closeModal()});
-if(state.reminderTime)document.getElementById('reminder-time').value=state.reminderTime;
+
+var modal = document.getElementById('sessionModal');
+if (modal) {
+  modal.addEventListener('click', function(e) {
+    if (e.target === modal) closeModal();
+  });
+}
+
+if (state.reminderTime) {
+  var rt = document.getElementById('reminder-time');
+  if (rt) rt.value = state.reminderTime;
+}
 </script>
 </body>
 </html>

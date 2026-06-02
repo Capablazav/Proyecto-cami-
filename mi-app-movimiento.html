@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mi Movimiento 💪">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23FF6B6B'/><text y='.9em' font-size='80' x='10'>💪</text></svg>">
+<title>Mi Movimiento 💪</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --coral:#FF6B6B; --yellow:#FFD93D; --mint:#6BCB77; --sky:#4D96FF;
+  --purple:#C77DFF; --peach:#FFB347; --pink:#FF8FAB;
+  --bg:#FFF8F0; --card:#FFFFFF; --dark:#1E1E2E; --gray:#6B7280; --light:#F3F4F6;
+  --safe-bottom:env(safe-area-inset-bottom,16px);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background:var(--bg);color:var(--dark)}
+.app{display:flex;flex-direction:column;height:100vh;height:100dvh;max-width:430px;margin:0 auto;position:relative;overflow:hidden}
+.screens{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:calc(80px + var(--safe-bottom))}
+.screen{display:none;animation:fadeUp 0.3s ease}
+.screen.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+/* NAV */
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:rgba(255,255,255,0.97);backdrop-filter:blur(20px);border-top:1px solid rgba(0,0,0,0.06);display:flex;justify-content:space-around;padding:10px 0 calc(10px + var(--safe-bottom));z-index:100;box-shadow:0 -4px 24px rgba(0,0,0,0.07)}
+.nav-btn{display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;cursor:pointer;padding:4px 12px;border-radius:12px;transition:transform 0.15s}
+.nav-btn:active{transform:scale(0.9)}
+.nav-icon{font-size:1.4rem}
+.nav-label{font-size:0.62rem;font-weight:800;color:#bbb;letter-spacing:0.03em}
+.nav-btn.active .nav-label{color:var(--coral)}
+.nav-btn.active .nav-icon{transform:scale(1.15)}
+
+/* SHARED */
+.card{background:var(--card);border-radius:20px;padding:16px;box-shadow:0 4px 16px rgba(0,0,0,0.06);margin-bottom:12px}
+.section-title{font-family:'Fredoka One',cursive;font-size:1.05rem;color:var(--dark);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.section-pad{padding:20px 16px}
+.btn{border:none;border-radius:14px;padding:14px 10px;font-family:'Nunito',sans-serif;font-weight:800;font-size:0.85rem;cursor:pointer;transition:transform 0.15s;display:flex;align-items:center;justify-content:center;gap:6px}
+.btn:active{transform:scale(0.95)}
+.btn-primary{background:linear-gradient(135deg,var(--coral),var(--pink));color:white;box-shadow:0 4px 16px rgba(255,107,107,0.35)}
+.btn-secondary{background:var(--light);color:var(--dark)}
+.btn-mint{background:linear-gradient(135deg,var(--mint),#45b95f);color:white;box-shadow:0 4px 14px rgba(107,203,119,0.35)}
+.form-label{font-size:0.72rem;font-weight:800;color:var(--gray);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;display:block}
+.form-input{width:100%;border:2.5px solid var(--light);border-radius:12px;padding:12px 14px;font-family:'Nunito',sans-serif;font-size:1rem;font-weight:700;color:var(--dark);background:var(--bg);transition:border-color 0.2s}
+.form-input:focus{outline:none;border-color:var(--coral);background:white}
+.form-2col{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form-row{margin-bottom:14px}
+
+/* HOME */
+.home-hero{padding:52px 20px 28px;background:linear-gradient(160deg,#1E1E2E 0%,#2D1B69 60%,#4a1942 100%);color:white;position:relative;overflow:hidden}
+.home-hero::before{content:'';position:absolute;top:-60px;right:-60px;width:220px;height:220px;background:radial-gradient(circle,rgba(199,125,255,0.3) 0%,transparent 70%);border-radius:50%}
+.home-greeting{font-size:0.82rem;font-weight:700;opacity:0.7;letter-spacing:0.08em;text-transform:uppercase;position:relative;z-index:1}
+.home-title{font-family:'Fredoka One',cursive;font-size:2rem;line-height:1.15;margin:4px 0 16px;position:relative;z-index:1}
+.home-title span{color:var(--yellow)}
+.streak-row{display:flex;gap:8px;position:relative;z-index:1;flex-wrap:wrap}
+.streak-chip{background:rgba(255,255,255,0.12);border-radius:50px;padding:7px 12px;font-weight:800;font-size:0.75rem;display:flex;align-items:center;gap:5px;backdrop-filter:blur(8px)}
+.streak-chip .big{font-family:'Fredoka One',cursive;font-size:1rem;color:var(--yellow)}
+.today-card{background:var(--card);border-radius:24px;padding:20px;margin:-20px 16px 0;box-shadow:0 8px 32px rgba(0,0,0,0.12);position:relative;z-index:2}
+.today-label{font-size:0.7rem;font-weight:800;color:var(--gray);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px}
+.today-status{font-family:'Fredoka One',cursive;font-size:1.15rem;margin-bottom:16px}
+.action-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mini-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.mini-stat{background:var(--card);border-radius:16px;padding:14px 10px;text-align:center;box-shadow:0 3px 12px rgba(0,0,0,0.06)}
+.mini-stat .val{font-family:'Fredoka One',cursive;font-size:1.5rem;line-height:1}
+.mini-stat .lbl{font-size:0.62rem;font-weight:800;color:var(--gray);margin-top:3px}
+.motivational{background:linear-gradient(135deg,var(--yellow),var(--peach));border-radius:20px;padding:16px 20px;margin:0 16px 12px;display:flex;align-items:center;gap:12px}
+.motivational .icon{font-size:2rem}
+.motivational .text{font-weight:700;font-size:0.82rem;color:#3d2c00;line-height:1.4}
+
+/* FC TIP CARD */
+.daily-habits-card{background:var(--card);border-radius:20px;padding:16px;margin:12px 16px 0;box-shadow:0 4px 16px rgba(0,0,0,0.07)}
+.habit-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.habit-row:last-child{margin-bottom:0}
+.habit-label{font-weight:800;font-size:0.82rem;display:flex;align-items:center;gap:6px}
+.habit-sub{font-size:0.68rem;color:var(--gray);font-weight:600;margin-top:1px}
+.water-btns{display:flex;align-items:center;gap:8px}
+.water-count{font-family:'Fredoka One',cursive;font-size:1.3rem;color:var(--sky);min-width:28px;text-align:center}
+.water-btn{width:32px;height:32px;border-radius:50%;border:none;font-size:1.1rem;cursor:pointer;font-weight:800;display:flex;align-items:center;justify-content:center;transition:transform 0.15s}
+.water-btn:active{transform:scale(0.9)}
+.water-track{flex:1;height:8px;background:var(--light);border-radius:10px;overflow:hidden;margin:0 8px}
+.water-fill{height:100%;border-radius:10px;background:linear-gradient(90deg,var(--sky),var(--purple));transition:width 0.4s ease}
+.meal-btns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.meal-btn{border:2px solid var(--light);background:var(--bg);border-radius:10px;padding:5px 8px;font-size:0.68rem;font-weight:800;cursor:pointer;transition:all 0.15s;white-space:nowrap}
+.meal-btn:active{transform:scale(0.95)}
+.meal-btn.selected-great{background:#e8f9eb;border-color:var(--mint);color:#1a5c2e}
+.meal-btn.selected-ok{background:#fff8e0;border-color:var(--yellow);color:#7a5c00}
+.meal-btn.selected-bad{background:#ffe8e8;border-color:var(--coral);color:#8b2020}
+.fc-tip-card{background:linear-gradient(135deg,#e8f9eb,#d0f0ff);border-radius:20px;padding:14px 18px;margin:12px 16px;display:flex;align-items:flex-start;gap:10px;box-shadow:0 3px 12px rgba(107,203,119,0.2);border-left:4px solid var(--mint)}
+.fc-tip-card .tip-icon{font-size:1.4rem;flex-shrink:0}
+.fc-tip-card .tip-title{font-weight:800;font-size:0.82rem;color:#1a5c2e;margin-bottom:3px}
+.fc-tip-card .tip-body{font-size:0.76rem;font-weight:700;color:#2a7a3e;line-height:1.4}
+
+/* TRACKER */
+.tracker-header{padding:52px 20px 24px;background:linear-gradient(160deg,var(--sky) 0%,var(--purple) 100%);color:white;position:relative;overflow:hidden}
+.tracker-header::before{content:'';position:absolute;top:-50px;right:-50px;width:180px;height:180px;background:rgba(255,255,255,0.12);border-radius:50%}
+.tracker-header h1{font-family:'Fredoka One',cursive;font-size:1.8rem;position:relative;z-index:1}
+.tracker-header p{font-size:0.82rem;font-weight:600;opacity:0.85;margin-top:4px;position:relative;z-index:1}
+.overall-progress{background:var(--card);border-radius:20px;padding:16px;margin:-18px 16px 0;box-shadow:0 6px 24px rgba(0,0,0,0.1);position:relative;z-index:2}
+.progress-label-row{display:flex;justify-content:space-between;font-size:0.78rem;font-weight:800;color:var(--gray);margin-bottom:8px}
+.progress-bar{height:12px;background:var(--light);border-radius:10px;overflow:hidden}
+.progress-bar-fill{height:100%;border-radius:10px;background:linear-gradient(90deg,var(--sky),var(--purple));transition:width 0.6s ease}
+.week-cards{padding:16px;display:flex;flex-direction:column;gap:14px}
+.week-item{background:var(--card);border-radius:20px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,0.06);border-left:5px solid var(--coral)}
+.week-item:nth-child(2){border-color:var(--sky)}.week-item:nth-child(3){border-color:var(--mint)}.week-item:nth-child(4){border-color:var(--yellow)}.week-item:nth-child(5){border-color:var(--purple)}.week-item:nth-child(6){border-color:var(--peach)}.week-item:nth-child(7){border-color:var(--pink)}.week-item:nth-child(8){border-color:var(--mint)}
+.week-item-header{padding:14px 16px 10px;display:flex;justify-content:space-between;align-items:flex-start}
+.week-item-title{font-family:'Fredoka One',cursive;font-size:1rem}
+.week-item-sub{font-size:0.7rem;color:var(--gray);font-weight:700;margin-top:2px;line-height:1.4}
+.week-done-badge{background:var(--light);border-radius:50px;padding:4px 12px;font-size:0.72rem;font-weight:800;color:var(--gray);white-space:nowrap}
+.week-done-badge.complete{background:#e8f9eb;color:var(--mint)}
+.days-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;padding:0 14px 14px}
+.day-item{display:flex;flex-direction:column;align-items:center;gap:3px}
+.day-name{font-size:0.58rem;font-weight:800;color:#bbb;text-transform:uppercase}
+.day-circle{width:36px;height:36px;border-radius:50%;border:2.5px dashed #e0e0e0;display:flex;align-items:center;justify-content:center;font-size:0.9rem;cursor:pointer;transition:all 0.2s;background:#fafafa}
+.day-circle:active{transform:scale(0.9)}
+.day-circle.done{background:var(--mint);border-color:var(--mint);box-shadow:0 3px 10px rgba(107,203,119,0.4)}
+.day-circle.rest{background:var(--yellow);border-color:var(--yellow);box-shadow:0 3px 10px rgba(255,217,61,0.4)}
+.day-circle.skip{background:var(--coral);border-color:var(--coral);box-shadow:0 3px 10px rgba(255,107,107,0.35)}
+.week-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 14px 14px}
+.week-metric-box{background:var(--bg);border-radius:12px;padding:10px 8px;text-align:center}
+.week-metric-val{font-family:'Fredoka One',cursive;font-size:1.05rem;color:var(--dark)}
+.week-metric-lbl{font-size:0.58rem;font-weight:800;color:var(--gray);margin-top:2px}
+
+/* RUTINA */
+.rutina-header{padding:52px 20px 28px;background:linear-gradient(160deg,var(--mint) 0%,var(--sky) 100%);color:white}
+.rutina-header h1{font-family:'Fredoka One',cursive;font-size:1.8rem}
+.rutina-header p{font-size:0.82rem;font-weight:600;opacity:0.85;margin-top:4px}
+.fc-zone-row{display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg);border-radius:12px;margin-bottom:8px}
+.fc-zone-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0}
+.fc-zone-name{font-weight:800;font-size:0.82rem}
+.fc-zone-range{font-family:'Fredoka One',cursive;font-size:1rem}
+.fc-zone-desc{font-size:0.68rem;color:var(--gray);font-weight:600;margin-top:1px}
+.fc-zone-active{border:2px solid var(--mint)}
+.rutina-phase{background:var(--card);border-radius:20px;overflow:hidden;margin-bottom:14px;box-shadow:0 4px 14px rgba(0,0,0,0.06)}
+.rutina-phase-header{padding:14px 16px;display:flex;align-items:center;gap:10px}
+.rutina-phase-title{font-family:'Fredoka One',cursive;font-size:1rem}
+.rutina-phase-sub{font-size:0.72rem;font-weight:700;color:var(--gray);margin-top:1px}
+.phase-badge{border-radius:50px;padding:4px 12px;font-size:0.7rem;font-weight:800;color:white;white-space:nowrap}
+.exercise-list{padding:0 14px 14px;display:flex;flex-direction:column;gap:8px}
+.exercise-row{background:var(--bg);border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:12px}
+.exercise-icon{font-size:1.3rem;width:32px;text-align:center}
+.exercise-info{flex:1}
+.exercise-name{font-weight:800;font-size:0.84rem}
+.exercise-detail{font-size:0.68rem;color:var(--gray);font-weight:700;margin-top:2px}
+.exercise-target{font-size:1rem}
+
+/* PROGRESO */
+.charts-header{padding:52px 20px 28px;background:linear-gradient(160deg,var(--peach) 0%,var(--coral) 100%);color:white}
+.charts-header h1{font-family:'Fredoka One',cursive;font-size:1.8rem}
+.charts-header p{font-size:0.82rem;font-weight:600;opacity:0.85;margin-top:4px}
+.chart-card{background:var(--card);border-radius:20px;padding:18px;box-shadow:0 4px 16px rgba(0,0,0,0.06);margin-bottom:14px}
+.chart-title{font-family:'Fredoka One',cursive;font-size:1rem;margin-bottom:14px;display:flex;align-items:center;gap:6px}
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:110px}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
+.bar-fill{width:100%;border-radius:8px 8px 0 0;min-height:4px;transition:height 0.6s ease}
+.bar-val{font-size:0.58rem;font-weight:800;color:var(--gray)}
+.bar-lbl{font-size:0.56rem;font-weight:800;color:#bbb}
+.line-chart-wrap{position:relative;height:120px}
+.line-chart-svg{width:100%;height:100%;overflow:visible}
+.feel-dots{display:flex;gap:6px;align-items:flex-end;height:70px}
+.feel-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;justify-content:flex-end}
+.feel-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;background:var(--light)}
+.feel-dot.has-data{background:linear-gradient(135deg,var(--yellow),var(--peach));box-shadow:0 3px 10px rgba(255,179,71,0.4)}
+.feel-lbl{font-size:0.56rem;font-weight:800;color:#bbb}
+.empty-state{text-align:center;padding:20px;color:var(--gray);font-weight:700;font-size:0.82rem}
+.empty-state .icon{font-size:2rem;margin-bottom:8px}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);z-index:200;display:none;align-items:flex-end}
+.modal-overlay.open{display:flex}
+.modal-sheet{background:var(--card);border-radius:28px 28px 0 0;padding:20px 20px calc(20px + var(--safe-bottom));width:100%;max-width:430px;margin:0 auto;animation:slideUp 0.3s ease}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-handle{width:40px;height:4px;background:#e0e0e0;border-radius:4px;margin:0 auto 20px}
+.modal-title{font-family:'Fredoka One',cursive;font-size:1.4rem;margin-bottom:20px;text-align:center}
+.feel-row{display:flex;gap:8px;justify-content:space-between}
+.feel-btn{flex:1;border:2.5px solid var(--light);background:var(--bg);border-radius:12px;padding:10px 4px;font-size:1.3rem;cursor:pointer;text-align:center;transition:all 0.15s}
+.feel-btn.selected{border-color:var(--coral);background:#fff0f0;transform:scale(1.08)}
+
+/* NOTIF */
+.notif-banner{position:fixed;top:0;left:50%;transform:translateX(-50%) translateY(-100%);max-width:430px;width:100%;background:var(--dark);color:white;padding:14px 20px;font-weight:700;font-size:0.85rem;z-index:300;transition:transform 0.4s ease;display:flex;align-items:center;gap:10px;padding-top:calc(14px + env(safe-area-inset-top,0px))}
+.notif-banner.show{transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="notif-banner" id="notifBanner"><span>🔔</span><span id="notifText">¡Hora de moverte!</span></div>
+
+  <div class="screens">
+
+    <!-- ══ HOME ══ -->
+    <div class="screen active" id="screen-home">
+      <div class="home-hero">
+        <div class="home-greeting">¡Hola! 👋</div>
+        <div class="home-title">¿Lista para<br><span>moverte hoy?</span></div>
+        <div class="streak-row">
+          <div class="streak-chip">🔥 <span class="big" id="home-streak">0</span> días activa</div>
+          <div class="streak-chip">📅 Semana <span class="big" id="home-week">1</span>/8</div>
+          <div class="streak-chip">🗓 Mes <span class="big" id="home-mes">1</span></div>
+        </div>
+      </div>
+
+      <div class="today-card">
+        <div class="today-label">Hoy · <span id="today-date"></span></div>
+        <div class="today-status" id="today-status">¡Aún no registras de hoy! 🌅</div>
+        <div class="action-btns">
+          <button class="btn btn-primary" style="grid-column:span 2;padding:16px;font-size:1rem;border-radius:16px" onclick="openModal()">⚡ Registrar sesión de hoy</button>
+          <button class="btn btn-secondary" onclick="markToday('rest')">😴 Descanso</button>
+          <button class="btn btn-secondary" onclick="markToday('skip')">❌ No pude</button>
+        </div>
+      </div>
+
+
+      <!-- REGISTRO DIARIO HÁBITOS -->
+      <div class="daily-habits-card">
+        <div style="font-family:'Fredoka One',cursive;font-size:1rem;margin-bottom:14px;display:flex;align-items:center;gap:6px">📋 Registro del día</div>
+
+        <!-- AGUA -->
+        <div class="habit-row">
+          <div>
+            <div class="habit-label">💧 Agua</div>
+            <div class="habit-sub">Meta: 8 vasos (2 litros)</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+            <div class="water-btns">
+              <button class="water-btn" style="background:#ffe8e8;color:var(--coral)" onclick="changeWater(-1)">−</button>
+              <span class="water-count" id="water-count">0</span>
+              <button class="water-btn" style="background:#e8f9eb;color:var(--mint)" onclick="changeWater(1)">+</button>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;width:120px">
+              <div class="water-track"><div class="water-fill" id="water-fill" style="width:0%"></div></div>
+              <span style="font-size:0.68rem;font-weight:800;color:var(--gray)" id="water-label">0/8</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- COMIDAS -->
+        <div class="habit-row" style="align-items:flex-start">
+          <div>
+            <div class="habit-label">🍽️ Comidas</div>
+            <div class="habit-sub">¿Cómo comiste hoy?</div>
+          </div>
+          <div class="meal-btns">
+            <button class="meal-btn" id="meal-3" onclick="selectMeal('3')">🍽️🍽️🍽️ 3</button>
+            <button class="meal-btn" id="meal-2" onclick="selectMeal('2')">🍽️🍽️ 2</button>
+            <button class="meal-btn" id="meal-1" onclick="selectMeal('1')">🍽️ 1</button>
+            <button class="meal-btn" id="meal-0" onclick="selectMeal('0')">🍔 Chatarra</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- FC TIP FIJO MES 1 -->
+      <div class="fc-tip-card">
+        <div class="tip-icon">💚</div>
+        <div>
+          <div class="tip-title">Mes 1 — Tu zona objetivo</div>
+          <div class="tip-body">Mantente entre <strong>118–137 LPM</strong> en bici. Si subes de 137, baja el ritmo. Puedes hablar con normalidad — esa es la señal correcta. 🚴</div>
+        </div>
+      </div>
+
+      <div class="section-pad">
+        <div class="section-title">📊 Tu resumen</div>
+        <div class="mini-stats">
+          <div class="mini-stat"><div class="val" id="home-total-days" style="color:var(--coral)">0</div><div class="lbl">Días activos</div></div>
+          <div class="mini-stat"><div class="val" id="home-total-min" style="color:var(--sky)">0</div><div class="lbl">Minutos</div></div>
+          <div class="mini-stat"><div class="val" id="home-avg-fc" style="color:var(--purple)">–</div><div class="lbl">FC prom.</div></div>
+        </div>
+      </div>
+
+      <div class="motivational" id="home-motivational">
+        <div class="icon">🙏</div>
+        <div class="text">Honra tu cuerpo moviéndote hoy. Cada minuto es un regalo.</div>
+      </div>
+
+      <div class="section-pad" style="padding-top:0">
+        <div class="section-title">🔔 Recordatorio diario</div>
+        <div class="card">
+          <div style="font-size:0.82rem;font-weight:700;color:var(--gray);margin-bottom:12px">Activa un recordatorio para moverte</div>
+          <div class="form-2col">
+            <div><label class="form-label">Hora</label><input type="time" class="form-input" id="reminder-time" value="08:00"></div>
+            <div style="display:flex;align-items:flex-end"><button class="btn btn-mint" style="width:100%;padding:12px" onclick="setReminder()">🔔 Activar</button></div>
+          </div>
+          <div id="reminder-status" style="font-size:0.75rem;font-weight:700;color:var(--mint);margin-top:8px;display:none">✅ Recordatorio activo</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ TRACKER ══ -->
+    <div class="screen" id="screen-tracker">
+      <div class="tracker-header">
+        <h1>📅 Mi Tracker</h1>
+        <p>8 semanas · Junio – Julio 2026</p>
+      </div>
+      <div class="overall-progress">
+        <div class="progress-label-row"><span>Progreso total</span><span id="tracker-pct">0%</span></div>
+        <div class="progress-bar"><div class="progress-bar-fill" id="tracker-bar" style="width:0%"></div></div>
+      </div>
+      <div class="week-cards" id="week-cards"></div>
+    </div>
+
+    <!-- ══ RUTINA ══ -->
+    <div class="screen" id="screen-rutina">
+      <div class="rutina-header">
+        <h1>💪 Mi Rutina</h1>
+        <p>8 semanas · Casa · Bici + Pesas 3kg</p>
+      </div>
+      <div class="section-pad">
+
+        <div class="section-title">❤️ Tus zonas de FC</div>
+        <div class="card" style="margin-bottom:20px">
+          <div style="font-size:0.75rem;font-weight:700;color:var(--gray);margin-bottom:12px">FC máx estimada: 196 LPM · 24 años</div>
+          <div class="fc-zone-row"><div class="fc-zone-dot" style="background:#4D96FF"></div><div><div class="fc-zone-name">Zona 1 — Muy suave</div><div class="fc-zone-range" style="color:#4D96FF">98 – 118 LPM</div><div class="fc-zone-desc">Puedes cantar · Calentamiento</div></div></div>
+          <div class="fc-zone-row fc-zone-active"><div class="fc-zone-dot" style="background:var(--mint)"></div><div><div class="fc-zone-name">Zona 2 — Tu zona ideal ⭐</div><div class="fc-zone-range" style="color:var(--mint)">118 – 137 LPM</div><div class="fc-zone-desc">Puedes hablar normal · Quema grasa · Semanas 1–6</div></div></div>
+          <div class="fc-zone-row"><div class="fc-zone-dot" style="background:var(--yellow)"></div><div><div class="fc-zone-name">Zona 2 alta</div><div class="fc-zone-range" style="color:var(--yellow)">128 – 147 LPM</div><div class="fc-zone-desc">Cuesta un poco hablar · Semanas 7–8</div></div></div>
+          <div class="fc-zone-row"><div class="fc-zone-dot" style="background:var(--coral)"></div><div><div class="fc-zone-name">Zona 3–5 — Intenso</div><div class="fc-zone-range" style="color:var(--coral)">157+ LPM</div><div class="fc-zone-desc">No puedes hablar · Más adelante</div></div></div>
+        </div>
+
+        <div class="section-title">📈 Tu progresión 8 semanas</div>
+        <div class="card" style="padding:0;overflow:hidden;margin-bottom:20px">
+          <div style="overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse;font-size:0.72rem;table-layout:fixed">
+              <thead>
+                <tr style="background:linear-gradient(135deg,var(--sky),var(--purple));color:white">
+                  <th style="padding:10px 8px;text-align:left;font-family:'Fredoka One',cursive;font-weight:400;width:28%">Sem.</th>
+                  <th style="padding:10px 5px;text-align:center;font-family:'Fredoka One',cursive;font-weight:400;width:10%">Días</th>
+                  <th style="padding:10px 5px;text-align:center;font-family:'Fredoka One',cursive;font-weight:400;width:14%">🚴Bici</th>
+                  <th style="padding:10px 5px;text-align:center;font-family:'Fredoka One',cursive;font-weight:400;width:22%">❤️LPM</th>
+                  <th style="padding:10px 5px;text-align:center;font-family:'Fredoka One',cursive;font-weight:400;width:13%">💪Pesas</th>
+                  <th style="padding:10px 5px;text-align:center;font-family:'Fredoka One',cursive;font-weight:400;width:13%">Total</th>
+                </tr>
+              </thead>
+              <tbody id="rutina-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="section-title">🗓 Estructura de cada sesión</div>
+        <div style="font-size:0.78rem;font-weight:700;color:var(--gray);margin-bottom:12px">Lunes · Miércoles · Viernes (+ Sábado en semanas 7–8)</div>
+
+        <div class="rutina-phase">
+          <div class="rutina-phase-header">
+            <div style="font-size:1.6rem">🔥</div>
+            <div style="flex:1"><div class="rutina-phase-title">Calentamiento</div><div class="rutina-phase-sub">5 min · Bici sin resistencia · FC 98–118</div></div>
+            <div class="phase-badge" style="background:var(--sky)">Z1</div>
+          </div>
+        </div>
+
+        <div class="rutina-phase">
+          <div class="rutina-phase-header">
+            <div style="font-size:1.6rem">💚</div>
+            <div style="flex:1"><div class="rutina-phase-title">Cardio Zona 2</div><div class="rutina-phase-sub">Ver tabla · Puedes hablar normal · FC 118–137</div></div>
+            <div class="phase-badge" style="background:var(--mint)">Z2</div>
+          </div>
+        </div>
+
+        <div class="rutina-phase">
+          <div class="rutina-phase-header">
+            <div style="font-size:1.6rem">💪</div>
+            <div style="flex:1"><div class="rutina-phase-title">Pesas 3kg</div><div class="rutina-phase-sub">Ver tabla · 4 ejercicios · 2 series c/u</div></div>
+            <div class="phase-badge" style="background:var(--purple)">Fuerza</div>
+          </div>
+          <div class="exercise-list">
+            <div class="exercise-row"><div class="exercise-icon">🏋️</div><div class="exercise-info"><div class="exercise-name">Sentadilla con mancuernas</div><div class="exercise-detail">2 series × 12 reps · Glúteos y piernas</div></div><div class="exercise-target">🍑</div></div>
+            <div class="exercise-row"><div class="exercise-icon">🏋️</div><div class="exercise-info"><div class="exercise-name">Peso muerto simple</div><div class="exercise-detail">2 series × 12 reps · Glúteos y espalda baja</div></div><div class="exercise-target">🍑</div></div>
+            <div class="exercise-row"><div class="exercise-icon">🏋️</div><div class="exercise-info"><div class="exercise-name">Remo inclinado</div><div class="exercise-detail">2 series × 12 reps · Contrarresta escritorio</div></div><div class="exercise-target">🪑</div></div>
+            <div class="exercise-row"><div class="exercise-icon">🏋️</div><div class="exercise-info"><div class="exercise-name">Press de hombros</div><div class="exercise-detail">2 series × 10 reps · Postura</div></div><div class="exercise-target">🪑</div></div>
+          </div>
+        </div>
+
+        <div class="card" style="background:#f0f8ff;border-left:4px solid var(--sky)">
+          <div style="font-size:0.82rem;font-weight:700;color:#1a4a6b">🔵 Kettlebell 8kg → Mes 2</div>
+          <div style="font-size:0.75rem;color:#4a7a9b;margin-top:4px;font-weight:600">Cuando tengas base sólida, la incorporamos para subir la intensidad.</div>
+        </div>
+
+        <div class="section-title" style="margin-top:16px">🎯 Metas del Mes 1</div>
+        <div class="card">
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg);border-radius:12px"><span style="font-size:1.2rem">🚴</span><div><div style="font-weight:800;font-size:0.84rem">Bici 3 días/semana</div><div style="font-size:0.72rem;color:var(--gray);font-weight:600">Lunes · Miércoles · Viernes · Zona 2</div></div></div>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg);border-radius:12px"><span style="font-size:1.2rem">💪</span><div><div style="font-weight:800;font-size:0.84rem">Pesas después de la bici</div><div style="font-size:0.72rem;color:var(--gray);font-weight:600">4 ejercicios · Mancuernas 3kg</div></div></div>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg);border-radius:12px"><span style="font-size:1.2rem">🍽️</span><div><div style="font-weight:800;font-size:0.84rem">Tres comidas al día</div><div style="font-size:0.72rem;color:var(--gray);font-weight:600">Desayuno · Almuerzo · Once</div></div></div>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg);border-radius:12px"><span style="font-size:1.2rem">💧</span><div><div style="font-weight:800;font-size:0.84rem">2 litros de agua diarios</div><div style="font-size:0.72rem;color:var(--gray);font-weight:600">El cambio más fácil y de mayor impacto</div></div></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══ PROGRESO ══ -->
+    <div class="screen" id="screen-progress">
+      <div class="charts-header">
+        <h1>📊 Mi Progreso</h1>
+        <p>Evolución semana a semana</p>
+      </div>
+      <div class="section-pad">
+        <div class="chart-card">
+          <div class="chart-title">⏱ Minutos por semana</div>
+          <div class="bar-chart" id="chart-min"></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">❤️ FC promedio por semana</div>
+          <div class="line-chart-wrap"><svg class="line-chart-svg" id="chart-fc" viewBox="0 0 300 120" preserveAspectRatio="none"></svg></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">😊 Cómo me sentí</div>
+          <div class="feel-dots" id="chart-feel"></div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-title">💧 Agua por semana</div>
+          <div class="bar-chart" id="chart-water"></div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-title">🍽️ Comidas por semana</div>
+          <div id="chart-meals" style="display:flex;flex-direction:column;gap:8px"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn active" id="nav-home" onclick="goTo('home')"><span class="nav-icon">🏠</span><span class="nav-label">Inicio</span></button>
+    <button class="nav-btn" id="nav-tracker" onclick="goTo('tracker')"><span class="nav-icon">📅</span><span class="nav-label">Tracker</span></button>
+    <button class="nav-btn" id="nav-rutina" onclick="goTo('rutina')"><span class="nav-icon">💪</span><span class="nav-label">Rutina</span></button>
+    <button class="nav-btn" id="nav-progress" onclick="goTo('progress')"><span class="nav-icon">📊</span><span class="nav-label">Progreso</span></button>
+  </nav>
+
+  <div class="modal-overlay" id="sessionModal">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">⚡ Registrar sesión</div>
+      <div class="form-row">
+        <label class="form-label">📅 Fecha</label>
+        <input class="form-input" type="date" id="s-date">
+      </div>
+      <div class="form-2col">
+        <div class="form-row"><label class="form-label">⏱ Min bici</label><input class="form-input" type="number" id="s-min" placeholder="ej. 20"></div>
+        <div class="form-row"><label class="form-label">❤️ FC promedio</label><input class="form-input" type="number" id="s-fc" placeholder="ej. 125"></div>
+      </div>
+      <div class="form-row">
+        <label class="form-label">💪 ¿Hiciste pesas?</label>
+        <select class="form-input" id="s-pesas">
+          <option value="ambos">✅ Bici + pesas</option>
+          <option value="bici">🚴 Solo bici</option>
+          <option value="pesas">💪 Solo pesas</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label class="form-label">😊 ¿Cómo me sentí?</label>
+        <div class="feel-row">
+          <button class="feel-btn" data-val="1" onclick="selectFeel(1)">😴</button>
+          <button class="feel-btn" data-val="2" onclick="selectFeel(2)">😐</button>
+          <button class="feel-btn" data-val="3" onclick="selectFeel(3)">🙂</button>
+          <button class="feel-btn" data-val="4" onclick="selectFeel(4)">😊</button>
+          <button class="feel-btn" data-val="5" onclick="selectFeel(5)">🤩</button>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px">
+        <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveSession()">Guardar ✅</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var WEEKS = [
+  {label:"S1",dates:"2–8 Jun",   emoji:"🌱",days:3,bici:15,pesas:10,lpmMin:118,lpmMax:137},
+  {label:"S2",dates:"9–15 Jun",  emoji:"🌿",days:3,bici:20,pesas:10,lpmMin:118,lpmMax:137},
+  {label:"S3",dates:"16–22 Jun", emoji:"🌻",days:3,bici:20,pesas:10,lpmMin:118,lpmMax:137},
+  {label:"S4",dates:"23–29 Jun", emoji:"💪",days:3,bici:25,pesas:10,lpmMin:118,lpmMax:137},
+  {label:"S5",dates:"30J–6Jul",  emoji:"⚡",days:3,bici:25,pesas:15,lpmMin:118,lpmMax:137},
+  {label:"S6",dates:"7–13 Jul",  emoji:"🔥",days:3,bici:30,pesas:15,lpmMin:118,lpmMax:137},
+  {label:"S7",dates:"14–20 Jul", emoji:"🚀",days:4,bici:30,pesas:15,lpmMin:128,lpmMax:147},
+  {label:"S8",dates:"21–27 Jul", emoji:"🏆",days:4,bici:35,pesas:15,lpmMin:128,lpmMax:147},
+];
+
+var WEEK_STARTS = [
+  new Date('2026-06-02'),
+  new Date('2026-06-09'),
+  new Date('2026-06-16'),
+  new Date('2026-06-23'),
+  new Date('2026-06-30'),
+  new Date('2026-07-07'),
+  new Date('2026-07-14'),
+  new Date('2026-07-21'),
+];
+
+var DAYS_SHORT=["L","M","X","J","V","S","D"];
+var FEEL_EMOJI=["","😴","😐","🙂","😊","🤩"];
+var MOTIVATIONS=[
+  {icon:"🙏",text:"Honra tu cuerpo moviéndote hoy. Cada minuto es un regalo."},
+  {icon:"🔥",text:"¡Ya llevas días activa! Tu cuerpo te lo agradece."},
+  {icon:"💪",text:"Estás construyendo el hábito más valioso. No pares."},
+  {icon:"🚀",text:"¡Más de la mitad! Eres imparable."},
+  {icon:"🏆",text:"¡Casi llegamos! La mejor versión de ti emerge."},
+];
+
+var state={}, selectedFeel=0;
+
+function save(){
+  try{
+    var str=JSON.stringify(state);
+    localStorage.setItem('mm3-state',str);
+    sessionStorage.setItem('mm3-state',str);
+  }catch(e){
+    try{sessionStorage.setItem('mm3-state',JSON.stringify(state));}catch(e2){}
+  }
+}
+
+function load(){
+  var str=null;
+  try{str=localStorage.getItem('mm3-state');}catch(e){}
+  if(!str){try{str=sessionStorage.getItem('mm3-state');}catch(e){}}
+  if(str){try{state=JSON.parse(str);}catch(e){state={};}}
+  else{state={};}
+}
+
+load();
+
+function goTo(name){
+  document.querySelectorAll('.screen').forEach(function(s)s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(function(b)b.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+  document.getElementById('nav-'+name).classList.add('active');
+  if(name==='tracker')renderTracker();
+  if(name==='progress')renderProgress();
+  if(name==='rutina')renderRutinaTable();
+  if(name==='home')renderHome();
+}
+
+function todayKey(){var d=new Date();return'day_'+d.getFullYear()+'_'+d.getMonth()+'_'+d.getDate()}
+function currentWeekIdx(){
+  var s=new Date('2026-06-02'),n=new Date();
+  var d=Math.floor((n-s)/(7*24*60*60*1000));
+  return Math.max(0,Math.min(7,d));
+}
+function currentDayInWeek(){var d=new Date().getDay();return d===0?6:d-1}
+
+
+function getTodayHabits(){
+  var tk=todayKey();
+  if(!state['h_'+tk])state['h_'+tk]={water:0,meal:null};
+  return state['h_'+tk];
+}
+
+function changeWater(delta){
+  var h=getTodayHabits();
+  h.water=Math.max(0,Math.min(8,h.water+delta));
+  state['h_'+todayKey()]=h;
+  save();renderHabits();
+}
+
+function selectMeal(val){
+  var h=getTodayHabits();
+  h.meal=val;
+  state['h_'+todayKey()]=h;
+  save();renderHabits();
+  var msgs={'3':'🍽️ ¡3 comidas! Perfecto 💚','2':'🍽️ 2 comidas. Mañana sumamos la tercera','1':'Solo 1 comida hoy. Tu cuerpo necesita más combustible','0':'🍔 Chatarra hoy. Sin juicio — mañana es otro día'};
+  showNotif(msgs[val]);
+}
+
+function renderHabits(){
+  var h=getTodayHabits();
+  var wc=document.getElementById('water-count');
+  var wf=document.getElementById('water-fill');
+  var wl=document.getElementById('water-label');
+  if(wc)wc.textContent=h.water;
+  if(wf)wf.style.width=Math.round((h.water/8)*100)+'%';
+  if(wl)wl.textContent=h.water+'/8';
+  var mealClasses={'3':'selected-great','2':'selected-ok','1':'selected-bad','0':'selected-bad'};
+  ['3','2','1','0'].forEach(function(v){
+    var btn=document.getElementById('meal-'+v);
+    if(btn){btn.className='meal-btn'+(h.meal===v?' '+mealClasses[v]:'')}
+  });
+}
+
+function renderHome(){
+  var now=new Date();
+  document.getElementById('today-date').textContent=now.toLocaleDateString('es',{weekday:'long',day:'numeric',month:'long'});
+  var tk=todayKey(),td=state[tk];
+  var se=document.getElementById('today-status');
+  if(td){
+    if(td.type==='done'){se.textContent='✅ Sesión registrada · '+( td.min||0)+' min · FC '+(td.fc||'–');se.style.color='var(--mint)'}
+    else if(td.type==='rest'){se.textContent='😴 Día de descanso';se.style.color='var(--yellow)'}
+    else{se.textContent='❌ No pudiste hoy. ¡Mañana es otro día!';se.style.color='var(--coral)'}
+  }else{se.textContent='¡Aún no registras de hoy! 🌅';se.style.color='var(--dark)'}
+
+  var totalDays=0,totalMin=0,fcArr=[];
+  Object.values(state).forEach(function(v){
+    if(v&&v.type==='done'){totalDays++;totalMin+=parseInt(v.min||0);if(v.fc)fcArr.push(parseInt(v.fc))}
+  });
+  document.getElementById('home-streak').textContent=totalDays;
+  document.getElementById('home-week').textContent=currentWeekIdx()+1;
+  document.getElementById('home-mes').textContent=currentWeekIdx()<4?1:2;
+  document.getElementById('home-total-days').textContent=totalDays;
+  document.getElementById('home-total-min').textContent=totalMin;
+  document.getElementById('home-avg-fc').textContent=fcArr.length?Math.round(fcArr.reduce(function(a,b){return a+b},0)/fcArr.length):'–';
+  var mi=Math.min(Math.floor(totalDays/4),4),m=MOTIVATIONS[mi];
+  document.getElementById('home-motivational').querySelector('.icon').textContent=m.icon;
+  document.getElementById('home-motivational').querySelector('.text').textContent=m.text;
+}
+
+function markToday(type){
+  state[todayKey()]={type:type};
+  save();renderHome();
+  showNotif(type==='rest'?'😴 Descanso guardado':'❌ Registrado. ¡Mañana será mejor!');
+}
+
+function openModal(dateStr){
+  var modal=document.getElementById('sessionModal');
+  var dateInput=document.getElementById('s-date');
+  var d=dateStr?new Date(dateStr+'T12:00:00'):new Date();
+  dateInput.value=d.toISOString().split('T')[0];
+  modal.classList.add('open');
+}
+function closeModal(){
+  document.getElementById('sessionModal').classList.remove('open');
+  selectedFeel=0;
+  document.querySelectorAll('.feel-btn').forEach(function(b){b.classList.remove('selected')});
+}
+function selectFeel(v){
+  selectedFeel=v;
+  document.querySelectorAll('.feel-btn').forEach(function(b){b.classList.toggle('selected',parseInt(b.dataset.val)===v)});
+}
+
+function saveSession(){
+  var min=document.getElementById('s-min').value;
+  var fc=document.getElementById('s-fc').value;
+  var pesas=document.getElementById('s-pesas').value;
+  var dateVal=document.getElementById('s-date').value;
+  if(!min){alert('Ingresa los minutos');return}
+  var sessionDate=dateVal?new Date(dateVal+'T12:00:00'):new Date();
+  var wi=getWeekIdxForDate(sessionDate),di=getDayInWeekForDate(sessionDate);
+  var dk=dateKey(sessionDate);
+  state[dk]={type:'done',min:parseInt(min),fc:fc?parseInt(fc):null,feel:selectedFeel,pesas:pesas};
+  state['w'+wi+'d'+di]='done';
+  if(!state['w'+wi])state['w'+wi]={min:0,fcArr:[],feelArr:[]};
+  state['w'+wi].min=(state['w'+wi].min||0)+parseInt(min);
+  if(fc){
+    if(!state['w'+wi].fcArr)state['w'+wi].fcArr=[];
+    state['w'+wi].fcArr.push(parseInt(fc));
+    state['w'+wi].fc=Math.round(state['w'+wi].fcArr.reduce(function(a,b){return a+b;},0)/state['w'+wi].fcArr.length);
+  }
+  if(selectedFeel){
+    if(!state['w'+wi].feelArr)state['w'+wi].feelArr=[];
+    state['w'+wi].feelArr.push(selectedFeel);
+    state['w'+wi].feel=Math.round(state['w'+wi].feelArr.reduce(function(a,b){return a+b;},0)/state['w'+wi].feelArr.length);
+  }
+  save();closeModal();renderHome();
+  showNotif('✅ '+min+' min registrados! '+(pesas==='ambos'?'Bici + pesas 💪':''));
+  document.getElementById('s-min').value='';
+  document.getElementById('s-fc').value='';
+}
+
+function renderRutinaTable(){
+  var tbody=document.getElementById('rutina-table-body');
+  if(!tbody)return;
+  var wi=currentWeekIdx();
+  tbody.innerHTML=WEEKS.map(function(w,i){
+    var isActive=i===wi;
+    var rowStyle=isActive?'background:linear-gradient(135deg,rgba(107,203,119,0.12),rgba(77,150,255,0.08));':'background:'+(i%2===0?'#fafafa':'white')+';';
+    var total=w.bici+w.pesas;
+    var lpmColor=i<6?'var(--mint)':'var(--yellow)';
+    return '<tr style="'+rowStyle+'">'
+      +'<td style="padding:9px 8px;font-weight:'+(isActive?'900':'700')+'">'+(isActive?'👉 ':'')+w.emoji+' '+w.label+'</td>'
+      +'<td style="padding:9px 5px;text-align:center;font-weight:800">'+w.days+'</td>'
+      +'<td style="padding:9px 5px;text-align:center;color:var(--sky);font-weight:800">'+w.bici+'m</td>'
+      +'<td style="padding:9px 5px;text-align:center;color:'+lpmColor+';font-weight:800;font-size:0.7rem">'+w.lpmMin+'–'+w.lpmMax+'</td>'
+      +'<td style="padding:9px 5px;text-align:center;color:var(--purple);font-weight:800">'+w.pesas+'m</td>'
+      +'<td style="padding:9px 5px;text-align:center;font-weight:800">~'+total+'m</td>'
+      +'</tr>';
+  }).join('');
+}
+
+function renderTracker(){
+  var totalDone=0;
+  WEEKS.forEach(function(_,wi){for(var di=0;di<7;di++)if((state['w'+wi+'d'+di]||'')==='done')totalDone++});
+  var pct=Math.round((totalDone/56)*100);
+  document.getElementById('tracker-bar').style.width=pct+'%';
+  document.getElementById('tracker-pct').textContent=pct+'%';
+  var container=document.getElementById('week-cards');
+  container.innerHTML='';
+  WEEKS.forEach(function(week,wi){
+    var doneDays=0;
+    var daysHTML=DAYS_SHORT.map(function(d,di){
+      var status=state['w'+wi+'d'+di]||'empty';
+      if(status==='done')doneDays++;
+      var icons={empty:'',done:'✅',rest:'😴',skip:'❌'};
+      return '<div class="day-item"><span class="day-name">'+d+'</span><div class="day-circle '+status+'" onclick="cycleDay('+wi+','+di+')">'+icons[status]+'</div></div>';
+    }).join('');
+    var wData=state['w'+wi]||{};
+    var isComplete=doneDays>=week.days;
+    var card=document.createElement('div');
+    card.className='week-item';
+    card.innerHTML='<div class="week-item-header"><div><div class="week-item-title">'+week.emoji+' Semana '+(wi+1)+'</div><div class="week-item-sub">'+week.dates+' · '+week.days+' días · '+week.bici+'min bici · FC '+week.lpmMin+'–'+week.lpmMax+'</div></div><div class="week-done-badge '+(isComplete?'complete':'')+'">'+(doneDays)+'/'+week.days+'</div></div>'
+      +'<div class="days-grid">'+daysHTML+'</div>'
+      +'<div class="week-metrics">'
+      +'<div class="week-metric-box"><div class="week-metric-val">'+(wData.min||0)+'m</div><div class="week-metric-lbl">⏱ Minutos</div></div>'
+      +'<div class="week-metric-box"><div class="week-metric-val">'+(wData.fc||'–')+'</div><div class="week-metric-lbl">❤️ FC prom.</div></div>'
+      +'<div class="week-metric-box"><div class="week-metric-val">'+(wData.feel?FEEL_EMOJI[Math.round(wData.feel)]:'–')+'</div><div class="week-metric-lbl">😊 Sensación</div></div>'
+      +'</div>';
+    container.appendChild(card);
+  });
+}
+
+function cycleDay(wi,di){
+  var key='w'+wi+'d'+di;
+  var cur=state[key]||'empty';
+  var next={empty:'done',done:'rest',rest:'skip',skip:'empty'};
+  state[key]=next[cur];
+  save();renderTracker();renderHome();
+}
+
+function renderProgress(){
+  // Minutes bar chart
+  var minData=WEEKS.map(function(_,wi){
+    var w=state['w'+wi];
+    return w?parseInt(w.min||0):0;
+  });
+  var maxMin=Math.max.apply(null,minData.concat([1]));
+  var minChart=document.getElementById('chart-min');
+  if(!minChart)return;
+  var hasMin=minData.some(function(v){return v>0});
+  if(!hasMin){
+    minChart.innerHTML='<div class="empty-state"><div class="icon">⏱</div>Registra sesiones para ver tus minutos</div>';
+  } else {
+    minChart.innerHTML=minData.map(function(val,i){
+      return '<div class="bar-col">'
+        +'<div class="bar-val">'+(val||'')+'</div>'
+        +'<div class="bar-fill" style="height:'+(val/maxMin*90)+'px;background:linear-gradient(180deg,var(--sky),var(--purple))"></div>'
+        +'<div class="bar-lbl">S'+(i+1)+'</div>'
+        +'</div>';
+    }).join('');
+  }
+
+  // FC line chart
+  var fcData=WEEKS.map(function(_,wi){
+    var w=state['w'+wi];
+    return w&&w.fc?parseInt(w.fc):null;
+  });
+  var svg=document.getElementById('chart-fc');
+  if(!svg)return;
+  var validFc=fcData.filter(function(v){return v!==null});
+  if(validFc.length<2){
+    svg.innerHTML='<text x="150" y="60" text-anchor="middle" font-size="11" fill="#bbb" font-family="Nunito">Necesitas 2+ semanas para ver la línea</text>';
+  } else {
+    var minFc=Math.min.apply(null,validFc)-10;
+    var maxFc=Math.max.apply(null,validFc)+10;
+    var pts=[];
+    fcData.forEach(function(v,i){
+      if(v!==null){
+        var x=20+i*(260/7);
+        var y=100-((v-minFc)/(maxFc-minFc))*80;
+        pts.push({x:x,y:y,v:v});
+      }
+    });
+    var path=pts.map(function(p,i){return(i===0?'M':'L')+p.x+','+p.y;}).join(' ');
+    var z2top=100-((137-minFc)/(maxFc-minFc))*80;
+    var z2bot=100-((118-minFc)/(maxFc-minFc))*80;
+    var html='<defs><linearGradient id="fcg" x1="0" y1="0" x2="1" y2="0">'
+      +'<stop offset="0%" stop-color="#FF6B6B"/>'
+      +'<stop offset="100%" stop-color="#C77DFF"/>'
+      +'</linearGradient></defs>'
+      +'<rect x="20" y="'+z2top+'" width="260" height="'+(z2bot-z2top)+'" fill="rgba(107,203,119,0.1)" rx="4"/>'
+      +'<path d="'+path+'" fill="none" stroke="url(#fcg)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>';
+    pts.forEach(function(p){
+      html+='<circle cx="'+p.x+'" cy="'+p.y+'" r="5" fill="white" stroke="#FF6B6B" stroke-width="2.5"/>';
+      html+='<text x="'+p.x+'" y="'+(p.y-10)+'" text-anchor="middle" font-size="9" font-weight="bold" fill="#666">'+p.v+'</text>';
+    });
+    for(var i=0;i<8;i++){
+      html+='<text x="'+(20+i*(260/7))+'" y="116" text-anchor="middle" font-size="8" fill="#bbb">S'+(i+1)+'</text>';
+    }
+    html+='<text x="284" y="'+(z2top+8)+'" font-size="7" fill="var(--mint)" font-weight="bold">Z2</text>';
+    svg.innerHTML=html;
+  }
+
+  // Feel dots
+  var FEEL_EMJ=["","😴","😐","🙂","😊","🤩"];
+  var feelData=WEEKS.map(function(_,wi){
+    var w=state['w'+wi];
+    return w&&w.feel?Math.round(w.feel):null;
+  });
+  var feelEl=document.getElementById('chart-feel');
+  if(feelEl){
+    feelEl.innerHTML=feelData.map(function(val,i){
+      return '<div class="feel-col">'
+        +'<div class="feel-dot '+(val?'has-data':'')+'">'+(val?FEEL_EMJ[val]:'')+'</div>'
+        +'<div class="feel-lbl">S'+(i+1)+'</div>'
+        +'</div>';
+    }).join('');
+  }
+
+  // Water chart
+  var waterData=WEEK_STARTS.map(function(ws,wi){
+    var total=0,count=0;
+    for(var di=0;di<7;di++){
+      var d=new Date(ws.getTime()+di*24*60*60*1000);
+      var hk='h_'+dateKey(d);
+      if(state[hk]&&state[hk].water>0){total+=state[hk].water;count++;}
+    }
+    return count?Math.round(total/count):0;
+  });
+  var maxW=Math.max.apply(null,waterData.concat([1]));
+  var wChart=document.getElementById('chart-water');
+  if(wChart){
+    var hasW=waterData.some(function(v){return v>0});
+    if(!hasW){
+      wChart.innerHTML='<div class="empty-state"><div class="icon">💧</div>Registra agua para ver el historial</div>';
+    } else {
+      wChart.innerHTML=waterData.map(function(val,i){
+        return '<div class="bar-col">'
+          +'<div class="bar-val">'+(val||'')+'</div>'
+          +'<div class="bar-fill" style="height:'+(val/maxW*90)+'px;background:linear-gradient(180deg,var(--sky),#a8d8ff)"></div>'
+          +'<div class="bar-lbl">S'+(i+1)+'</div>'
+          +'</div>';
+      }).join('');
+    }
+  }
+
+  // Meals chart
+  var mealLabels={'3':'🍽️🍽️🍽️ 3 comidas','2':'🍽️🍽️ 2 comidas','1':'🍽️ 1 comida','0':'🍔 Chatarra'};
+  var mealColors={'3':'var(--mint)','2':'var(--yellow)','1':'var(--peach)','0':'var(--coral)'};
+  var mealData=WEEK_STARTS.map(function(ws){
+    var counts={'3':0,'2':0,'1':0,'0':0};
+    for(var di=0;di<7;di++){
+      var d=new Date(ws.getTime()+di*24*60*60*1000);
+      var hk='h_'+dateKey(d);
+      if(state[hk]&&state[hk].meal){counts[state[hk].meal]++;}
+    }
+    return counts;
+  });
+  var mChart=document.getElementById('chart-meals');
+  if(mChart){
+    var hasMeals=mealData.some(function(w){return w['3']>0||w['2']>0||w['1']>0||w['0']>0});
+    if(!hasMeals){
+      mChart.innerHTML='<div class="empty-state"><div class="icon">🍽️</div>Registra comidas para ver el historial</div>';
+    } else {
+      var html='';
+      ['3','2','1','0'].forEach(function(key){
+        var vals=mealData.map(function(w){return w[key];});
+        if(!vals.some(function(v){return v>0;}))return;
+        var maxV=Math.max.apply(null,vals.concat([1]));
+        html+='<div style="margin-bottom:10px">';
+        html+='<div style="font-size:0.72rem;font-weight:800;color:var(--gray);margin-bottom:6px">'+mealLabels[key]+'</div>';
+        html+='<div style="display:flex;align-items:flex-end;gap:6px;height:50px">';
+        vals.forEach(function(v,i){
+          html+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">';
+          html+='<div style="width:100%;height:'+(v>0?Math.max(4,v/maxV*40):0)+'px;background:'+mealColors[key]+';border-radius:4px 4px 0 0"></div>';
+          html+='<div style="font-size:0.56rem;font-weight:800;color:#bbb">S'+(i+1)+'</div>';
+          html+='</div>';
+        });
+        html+='</div></div>';
+      });
+      mChart.innerHTML=html;
+    }
+  }
+}
+
+function showNotif(msg){
+  var b=document.getElementById('notifBanner');
+  document.getElementById('notifText').textContent=msg;
+  b.classList.add('show');
+  setTimeout(function(){b.classList.remove('show')},3000);
+}
+
+function setReminder(){
+  var time=document.getElementById('reminder-time').value;
+  if(!time)return;
+  var parts=time.split(':');
+  var h=parseInt(parts[0]),m=parseInt(parts[1]);
+  var now=new Date(),target=new Date();
+  target.setHours(h,m,0,0);
+  if(target<=now)target.setDate(target.getDate()+1);
+  var ms=target-now;
+  if('Notification' in window){
+    Notification.requestPermission().then(function(perm){
+      if(perm==='granted'){
+        setTimeout(function(){new Notification('¡Mi Movimiento! 💪',{body:'¡Hora de moverte! Recuerda: FC entre 118–137 LPM 💚'})},ms);
+        document.getElementById('reminder-status').style.display='block';
+        showNotif('🔔 Recordatorio activo para las '+time);
+      }else{showNotif('⚠️ Activa permisos en Safari → Configuración')}
+    });
+  }else{
+    setTimeout(function(){showNotif('🔔 ¡Hora de moverte! FC objetivo: 118–137 💚')},ms>86400000?5000:ms);
+    document.getElementById('reminder-status').style.display='block';
+    showNotif('🔔 Recordatorio activo para las '+time);
+  }
+  state.reminderTime=time;save();
+}
+
+// Init
+renderHome();
+document.getElementById('sessionModal').addEventListener('click',function(e){if(e.target===this)closeModal()});
+if(state.reminderTime)document.getElementById('reminder-time').value=state.reminderTime;
+</script>
+</body>
+</html>
